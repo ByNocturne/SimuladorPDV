@@ -1,4 +1,6 @@
-import { state } from './state.js';
+import { state } from '../state.js';
+import { UI } from '../ui.js';
+import { getEngine } from './engineManager.js';
 
 async function request(endpoint, method = 'POST', body = null) {
     const headers = {
@@ -15,7 +17,6 @@ async function request(endpoint, method = 'POST', body = null) {
     return response;
 }
 
-
 export async function iniciarTransacao() {
     const payload = {
         "transaction_context": { "document_no": state.documentNo, "phone": "" },
@@ -30,10 +31,12 @@ export async function iniciarTransacao() {
             const statusLog = res.ok ? 'success' : 'error';
             state.transactionId = data.transaction_id; 
 
+            state.vendaIniciada = true
+
             UI.registrarLog("API START", statusLog, { request: payload, response: data });
 
             if (data.should_display_message) {
-                UI.abrirModalMensagem(data.message.text, data.message, handleMessage);
+                UI.abrirModalMensagem(data.message.text, data.message, handleEnviarMensagem);
             }
         } else {
             UI.registrarLog("API START", 'error', { request: payload, response: data });
@@ -60,7 +63,7 @@ export async function enviarMensagem(tag,value) {
             UI.registrarLog("API MESSAGE", statusLog, { request: payload, response: data });
 
             if (data.should_display_message) {
-                UI.abrirModalMensagem(data.message.text, data.message, handleMessage);
+                UI.abrirModalMensagem(data.message.text, data.message, handleEnviarMensagem);
             } else if (state.vendaFechada) {
                 await aplicarDescontos();
             } else {
@@ -107,7 +110,7 @@ export async function processarSubtotal(itens) {
             UI.registrarLog("API PRE-APPLY", statusLog, { request: payload, response: data });
 
             if (data.should_display_message) {
-                UI.abrirModalMensagem(data.message.text, data.message, handleMessage);
+                UI.abrirModalMensagem(data.message.text, data.message, handleEnviarMensagem);
             } else {
                 await aplicarDescontos();
             }
@@ -291,4 +294,10 @@ export async function enviarCupom(itens,pagamentos) {
     } catch (e) {
         UI.registrarLog("API CUPOM", 'error', { request: payload, response: data });
     }
+}
+
+async function handleEnviarMensagem() {
+    const engine = getEngine(); 
+
+    await engine.processarSubtotal(); 
 }

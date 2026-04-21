@@ -11,23 +11,23 @@ async function handleIniciarTransacao() {
 async function handleSubtotal() {
     const engine = getEngine(); 
 
-    await engine.processarSubtotal(); 
+    await engine.processarSubtotal(state.carrinho); 
 }
 
 async function handleFinalizarTransacao() {
     const engine = getEngine(); 
 
-    await engine.finalizarTransacao(); 
+    await engine.finalizarTransacao(state.carrinho); 
 }
 async function handleCancelarTransacao() {
     const engine = getEngine(); 
 
-    await engine.handleCancelarTransacao(); 
+    await engine.handleCancelarTransacao(state.carrinho); 
 }
 async function handleEnviarCupom() {
     const engine = getEngine(); 
 
-    await engine.enviarCupom(); 
+    await engine.enviarCupom(state.carrinho); 
 }
 
 document.addEventListener('DOMContentLoaded', () => {
