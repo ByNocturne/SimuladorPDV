@@ -1,7 +1,40 @@
 import { state, updateConfig, resetVenda } from './state.js';
+import { getEngine } from './engines/engineManager.js';
 import { UI } from './ui.js';
 
-// --- Inicialização e Eventos ---
+async function handleIniciarTransacao() {
+    const engine = getEngine(); 
+
+    await engine.iniciarTransacao(); 
+}
+
+async function handleEnviarMensagem() {
+    const engine = getEngine(); 
+
+    await engine.processarSubtotal(state.carrinho); 
+}
+
+async function handleSubtotal() {
+    const engine = getEngine(); 
+
+    await engine.processarSubtotal(state.carrinho); 
+}
+
+async function handleFinalizarTransacao() {
+    const engine = getEngine(); 
+
+    await engine.finalizarTransacao(state.carrinho); 
+}
+async function handleCancelarTransacao() {
+    const engine = getEngine(); 
+
+    await engine.handleCancelarTransacao(state.carrinho); 
+}
+async function handleEnviarCupom() {
+    const engine = getEngine(); 
+
+    await engine.enviarCupom(state.carrinho); 
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     UI.renderizarCarrinho();
@@ -29,7 +62,7 @@ document.getElementById('btn-confirmar-config').onclick = () => {
     UI.registrarLog("Configurações atualizadas", "success");
 };
 
-document.getElementById('btn-iniciar-venda').onclick = handleStart;
+document.getElementById('btn-iniciar-venda').onclick = handleIniciarTransacao;
 
 window.adicionarProdutoManualmente = () => {
     const sku = document.getElementById('input-sku').value;
@@ -53,7 +86,7 @@ window.adicionarProdutoManualmente = () => {
     }
 };
 
-window.enviarPreApply = handlePreApply;
+window.enviarPreApply = handleSubtotal;
 window.enviarConfirm = handleConfirm;
 window.enviarCancel = handleCancel;
 window.enviarCupom = handleCupom;

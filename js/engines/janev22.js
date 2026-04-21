@@ -16,7 +16,7 @@ async function request(endpoint, method = 'POST', body = null) {
 }
 
 
-export async function enviarInicio() {
+export async function iniciarTransacao() {
     const payload = {
         "transaction_context": { "document_no": state.documentNo, "phone": "" },
         "transaction_id": ""
@@ -29,8 +29,6 @@ export async function enviarInicio() {
         if (res.ok) {
             const statusLog = res.ok ? 'success' : 'error';
             state.transactionId = data.transaction_id; 
-
-            state.vendaIniciada = true
 
             UI.registrarLog("API START", statusLog, { request: payload, response: data });
 
@@ -45,7 +43,7 @@ export async function enviarInicio() {
     }
 }
 
-export async function enviarMensagem(value,tag) {
+export async function enviarMensagem(tag,value) {
     const payload = { 
             "input_value": value, 
             "tag": tag, 
@@ -61,11 +59,13 @@ export async function enviarMensagem(value,tag) {
 
             UI.registrarLog("API MESSAGE", statusLog, { request: payload, response: data });
 
-            if ( data.should_display_message) {
+            if (data.should_display_message) {
                 UI.abrirModalMensagem(data.message.text, data.message, handleMessage);
             } else if (state.vendaFechada) {
                 handleApply();
-            } 
+            } else {
+                state.vendaIniciada = true;
+            }
         } else {
             UI.registrarLog("API MESSAGE", 'error', { request: payload, response: data });
         }
@@ -74,11 +74,14 @@ export async function enviarMensagem(value,tag) {
     }
 }
 
-export async function enviarSubtotal(itens) {
-    state.vendaFechada = true;
+export async function processarSubtotal(itens) {
 
-    const itens = state.carrinho.map(i => ({
-    ean: i.ean, sku: i.sku, quantity: i.qtd, packing_quantity: 1, total_value: i.preco
+    const itensFormatados = itens.map(i => ({
+        ean: i.ean, 
+        sku: i.sku, 
+        quantity: i.qtd, 
+        packing_quantity: 1, 
+        total_value: i.preco
     }));
 
     if(state.vendaIniciada === false) {
@@ -87,7 +90,7 @@ export async function enviarSubtotal(itens) {
     }
 
     const payload = {
-        "items": itens,
+        "items": itensFormatados,
         "origin": "pdv-simulator",
         "transaction_id": state.transactionId
     };
@@ -99,10 +102,14 @@ export async function enviarSubtotal(itens) {
         if (res.ok) {
             const statusLog = res.ok ? 'success' : 'error';
 
+            state.vendaFechada = true;
+
             UI.registrarLog("API PRE-APPLY", statusLog, { request: payload, response: data });
 
             if (data.should_display_message) {
                 UI.abrirModalMensagem(data.message.text, data.message, handleMessage);
+            } else {
+                await aplicarDescontos();
             }
         } else {
             UI.registrarLog("API PRE-APPLY", 'error', { request: payload, response: data });
@@ -113,7 +120,7 @@ export async function enviarSubtotal(itens) {
     }
 }   
 
-export async function enviarSolicitacaoDescontos() {
+export async function aplicarDescontos() {
     const payload = {
         "transaction_id": state.transactionId
     };
@@ -157,7 +164,7 @@ export async function enviarSolicitacaoDescontos() {
     }
 }  
 
-export async function enviarFinalizacao() {
+export async function finalizarTransacao() {
     const payload = {
         "transaction_id": state.transactionId
     };
@@ -196,7 +203,7 @@ export async function enviarFinalizacao() {
     }
 }
 
-export async function enviarCancelamentoTransacao() {
+export async function cancelarTransacao() {
     const payload = {
         "transaction_id": state.transactionId
     };
