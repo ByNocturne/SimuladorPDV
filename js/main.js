@@ -8,32 +8,26 @@ async function handleIniciarTransacao() {
     await engine.iniciarTransacao(); 
 }
 
-async function handleEnviarMensagem() {
-    const engine = getEngine(); 
-
-    await engine.processarSubtotal(state.carrinho); 
-}
-
 async function handleSubtotal() {
     const engine = getEngine(); 
 
-    await engine.processarSubtotal(state.carrinho); 
+    await engine.processarSubtotal(); 
 }
 
 async function handleFinalizarTransacao() {
     const engine = getEngine(); 
 
-    await engine.finalizarTransacao(state.carrinho); 
+    await engine.finalizarTransacao(); 
 }
 async function handleCancelarTransacao() {
     const engine = getEngine(); 
 
-    await engine.handleCancelarTransacao(state.carrinho); 
+    await engine.handleCancelarTransacao(); 
 }
 async function handleEnviarCupom() {
     const engine = getEngine(); 
 
-    await engine.enviarCupom(state.carrinho); 
+    await engine.enviarCupom(); 
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -86,7 +80,7 @@ window.adicionarProdutoManualmente = () => {
     }
 };
 
-window.enviarPreApply = handleSubtotal;
-window.enviarConfirm = handleConfirm;
-window.enviarCancel = handleCancel;
-window.enviarCupom = handleCupom;
+window.enviarSubtotal = handleSubtotal;
+window.enviarFinalizarTransacao = handleFinalizarTransacao;
+window.enviarCancelarTransacao = handleCancelarTransacao;
+window.enviarCupom = handleEnviarCupom;

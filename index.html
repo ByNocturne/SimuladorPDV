@@ -120,13 +120,13 @@
                                     <span id="valor-liquido">R$ 0,000</span>
                                 </div>
                                 <div class="btn-subtotal">
-                                    <button onclick="enviarPreApply()" id="btn-subtotal" class="btn-padrao btn-gradient btn-subtotal">Aplicar Subtotal</button>
+                                    <button onclick="enviarSubtotal()" id="btn-subtotal" class="btn-padrao btn-gradient btn-subtotal">Aplicar Subtotal</button>
                                 </div>
                             </div>
                          </div>
                         <div class="acoes-venda">
-                            <button onclick="enviarConfirm(), enviarCupom()" id="btn-confirmar" class="btn-padrao btn-gradient btn-finalizar">Finalizar Venda</button>
-                            <button onclick="enviarCancel()" id="btn-cancelar" class="btn-padrao btn-cancelar">Cancelar</button>
+                            <button onclick="enviarFinalizarTransacao(), enviarCupom()" id="btn-confirmar" class="btn-padrao btn-gradient btn-finalizar">Finalizar Venda</button>
+                            <button onclick="enviarCancelarTransacao()" id="btn-cancelar" class="btn-padrao btn-cancelar">Cancelar</button>
                         </div>
                         <div id="log-tempo-real" class="log-container-footer"></div>
                     </div>

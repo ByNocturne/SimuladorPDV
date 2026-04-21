@@ -62,7 +62,7 @@ export async function enviarMensagem(tag,value) {
             if (data.should_display_message) {
                 UI.abrirModalMensagem(data.message.text, data.message, handleMessage);
             } else if (state.vendaFechada) {
-                handleApply();
+                await aplicarDescontos();
             } else {
                 state.vendaIniciada = true;
             }
