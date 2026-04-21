@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulador de PDV - Mercafacil</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="layout-sistema">
+
+        <div id="modal-mensagens" style="display: none;">
+            <div class="modal-conteudo-mensagens">
+                <h2 id="texto-mensagem"></h2>
+                <div id="container-botoes" class="grupo-botoes-modal"></div>
+            </div>
+        </div>
+
+        <div id="modal-configuracoes" style="display: none;">
+            <div class="modal-conteudo">
+                <h2 style="color: var(--text-dark); text-align: center;">Configurações da conta</h2>
+                <div class="formulario-grid">
+                    <div id="engine">
+                        <label for="input-doc-config">Engine (PDV)</label>
+                        <div >
+                            <input type="radio" id="janev22" name="engine" value="janev22">
+                            <label for="pix">Jane - v2.2</label>
+
+                            <input type="radio" id="cartao" name="engine" value="consinco">
+                            <label for="cartao">Consinco</label>
+                        </div>
+                    </div>
+                    <label for="input-doc-config">Número do Documento (CPF/CNPJ - Reuso):</label>
+                    <input type="text" id="input-doc-config" class="input-padrao" placeholder="Documento para reuso">
+
+                    <label for="input-token-config">Token:</label>
+                    <input type="password" id="input-token-config" class="input-padrao" placeholder="Token da conta">
+
+                    <label for="input-url-config">URL Base:</label>
+                    <input type="text" id="input-url-config" class="input-padrao" placeholder="URL base da API">
+                </div>
+                <button id="btn-confirmar-config" class="btn-padrao btn-gradient">Confirmar</button>
+            </div>
+        </div>
+        
+        <div id="modal-cupom" style="display: none;">
+            <span>Olá</span>
+        </div>
+
+        <aside class="barra-lateral">
+            <div class="logo-container">
+                <img src="mercafacil.png" alt="Logo Mercafacil" style="width: 100px; height: auto;">
+                <span class="logo-texto">Mercafacil</span>
+                <h3 class="light-texto">Simulador PDV</h3>
+            </div>
+            
+            <nav class="menu-navegacao">
+                <a href="#" class="item-menu ativo" onclick="alternarView('pdv')">🛒 PDV</a>
+                <a href="#" class="item-menu" onclick="abrirConfiguracoes()">⚙️ Configurações</a>
+                <a href="#" class="item-menu" onclick="alternarView('log')">🔍 Histórico de Logs</a>
+                <a href="#" class="item-menu" onclick="alternarView('cupom')">🧾 Histórico de Cupons</a>
+            </nav>
+
+            <div class="menu-texto" style="color: white; padding: 20px; font-size: 0.8em; opacity: 0.6;">
+                v1.1.0
+            </div>
+        </aside>
+
+        <main class="conteudo-principal">
+            
+            <div id="view-pdv">
+                <div class="grade-venda">
+                    <div id="esquerda">
+                        <h3 class="dark-texto cabecalho-produto">Adicionar Produtos</h3>
+                        <div class="linha-entrada">
+                            <input type="text" id="input-sku" placeholder="Código SKU" class="input-padrao">
+                            <input type="text" id="input-ean" placeholder="Código EAN" class="input-padrao">
+                            <input type="number" id="input-qtd" placeholder="Quantidade" class="input-padrao">
+                            <input type="number" id="input-valor" placeholder="Valor Total" class="input-padrao">
+                            <button onclick="adicionarProdutoManualmente()" class="btn-padrao btn-gradient btn-adicionar">Adicionar</button>
+                        </div>
+                        <div class="coluna-lista cabecalho-carrinho">
+                            <div id="cabecalho-carrinho" class="dark-texto">
+                                <span>Itens do Carrinho</span>
+                            </div>
+                            <div id="lista-itens"></div>
+                        </div>
+                    </div>
+
+                    <div id="direita">
+                        <div id="iniciar-venda">
+                            <button id="btn-iniciar-venda" class="btn-padrao btn-gradient btn-iniciar-venda">Iniciar Venda</button>
+                        </div>
+
+                        <div class="coluna-resumo">
+                            <div class="card-totais">
+                                <div class="linha-resumo linha-subtotal">
+                                    <span>Subtotal</span>
+                                    <span id="valor-total">R$ 0,000</span>
+                                </div>
+                                <div class="linha-resumo linha-desc-itens">
+                                    <span>Desc. Itens</span>
+                                    <span id="valor-desc-itens">R$ 0,000</span>
+                                </div>
+                                <div class="linha-resumo linha-desc-pagamento">
+                                    <span>Desc. Pagamento</span>
+                                    <span id="valor-pagamento" >R$ 0,000</span>
+                                </div>
+                                <div class="linha-resumo linha-desc-rateio">
+                                    <span>Desc. Rateio</span>
+                                    <span id="valor-rateio">R$ 0,000</span>
+                                </div>
+                                <div class="linha-resumo">
+                                    <span>Total Desc.</span>
+                                    <span id="valor-descontos">R$ 0,000</span>
+                                </div>
+                                <div class="linha-resumo total-final">
+                                    <span>TOTAL</span>
+                                    <span id="valor-liquido">R$ 0,000</span>
+                                </div>
+                                <div class="btn-subtotal">
+                                    <button onclick="enviarPreApply()" id="btn-subtotal" class="btn-padrao btn-gradient btn-subtotal">Aplicar Subtotal</button>
+                                </div>
+                            </div>
+                         </div>
+                        <div class="acoes-venda">
+                            <button onclick="enviarConfirm(), enviarCupom()" id="btn-confirmar" class="btn-padrao btn-gradient btn-finalizar">Finalizar Venda</button>
+                            <button onclick="enviarCancel()" id="btn-cancelar" class="btn-padrao btn-cancelar">Cancelar</button>
+                        </div>
+                        <div id="log-tempo-real" class="log-container-footer"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-log" style="display: none;">
+                <h2 class="dark-texto">Histórico de Transações</h2>
+                <div class="tabela-logs-container">
+                    <table id="tabela-transacoes">
+                        <thead>
+                            <tr>
+                                <th>ID da Transação</th>
+                                <th>Data/Hora</th>
+                                <th>Status</th>
+                                <th>Ação</th>
+                                <th>Request</th>
+                                <th>Response</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpo-tabela-logs">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-cupom" style="display: none;">
+                <h2 class="dark-texto">Histórico de Cupons</h2>
+                <div class="container-historico-cupons"></div>
+            </div>
+
+        </main>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>/
