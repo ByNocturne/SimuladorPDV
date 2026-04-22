@@ -1,6 +1,7 @@
 import { state, updateConfig, resetVenda } from './state.js';
 import { getEngine } from './engines/engineManager.js';
 import { UI } from './ui.js';
+import * as utils from './utils.js'
 
 async function handleIniciarTransacao() {
     const engine = getEngine(); 
@@ -45,16 +46,44 @@ window.alternarView = UI.alternarView;
 window.abrirConfiguracoes = () => document.getElementById('modal-configuracoes').style.display = 'flex';
 
 document.getElementById('btn-confirmar-config').onclick = () => {
+    const docOriginal = document.getElementById('input-doc-config').value;
+    
+    const eValido = utils.validarCPF(docOriginal) || utils.validarCNPJ(docOriginal);
+
+    if (!eValido) {
+        UI.registrarLog("Documento inválido!", "error");
+        alert("Atenção!: Você não digitou um CPF ou CNPJ válido.");
+        return;
+    }
+
+    const docLimpo = docOriginal.replace(/[^\d]+/g, '');
 
     updateConfig(
         document.getElementById('input-url-config').value,
         document.getElementById('input-token-config').value,
-        document.getElementById('input-doc-config').value,
-        document.querySelector('input[name="engine"]:checked').value
+        docLimpo,
+        document.querySelector('input[name="engine"]:checked').value,
+        document.querySelector('input-user-config"]:checked').value,
+        document.querySelector('input-partnerCode-config"]:checked').value,
+        document.querySelector('input-paymentCode-config"]:checked').value
     );
     document.getElementById('modal-configuracoes').style.display = 'none';
     UI.registrarLog("Configurações atualizadas", "success");
 };
+
+document.getElementById('btn-fechar-config').onclick = () => {
+    document.getElementById('modal-configuracoes').style.display = 'none';
+    UI.registrarLog("Configurações atualizadas", "success");
+}
+
+// Se clickar fora do modal, fecha
+window.onclick = (event) => {
+    const modal = document.getElementById('modal-configuracoes');
+
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+}
 
 document.getElementById('btn-iniciar-venda').onclick = handleIniciarTransacao;
 

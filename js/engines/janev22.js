@@ -36,7 +36,7 @@ export async function iniciarTransacao() {
             UI.registrarLog("API START", statusLog, { request: payload, response: data });
 
             if (data.should_display_message) {
-                UI.abrirModalMensagem(data.message.text, data.message, handleEnviarMensagem);
+                UI.abrirModalMensagem(data.message.text, data.message, enviarMensagem);
             }
         } else {
             UI.registrarLog("API START", 'error', { request: payload, response: data });
@@ -63,7 +63,7 @@ export async function enviarMensagem(tag,value) {
             UI.registrarLog("API MESSAGE", statusLog, { request: payload, response: data });
 
             if (data.should_display_message) {
-                UI.abrirModalMensagem(data.message.text, data.message, handleEnviarMensagem);
+                UI.abrirModalMensagem(data.message.text, data.message, enviarMensagem);
             } else if (state.vendaFechada) {
                 await aplicarDescontos();
             } else {
@@ -94,7 +94,7 @@ export async function processarSubtotal(itens) {
 
     const payload = {
         "items": itensFormatados,
-        "origin": "pdv-simulator",
+        "origin": "pdv",
         "transaction_id": state.transactionId
     };
     
@@ -110,7 +110,7 @@ export async function processarSubtotal(itens) {
             UI.registrarLog("API PRE-APPLY", statusLog, { request: payload, response: data });
 
             if (data.should_display_message) {
-                UI.abrirModalMensagem(data.message.text, data.message, handleEnviarMensagem);
+                UI.abrirModalMensagem(data.message.text, data.message, enviarMensagem);
             } else {
                 await aplicarDescontos();
             }
@@ -181,8 +181,6 @@ export async function finalizarTransacao() {
 
             UI.registrarLog("API CONFIRM", statusLog, { request: payload, response: data }); 
 
-            document.getElementById('btn-confirmar').onclick = handleConfirm;
-
             const novoCupom = {
                 transactionId: state.transactionId,
                 data: new Date().toLocaleString('pt-BR'),
@@ -227,58 +225,47 @@ export async function cancelarTransacao() {
     }
 }
 
-export async function enviarCupom(itens,pagamentos) {
+export async function enviarCupom() {
+    const agora = new Date();
+    const dataFormatada = agora.toISOString().split('T')[0]; // YYYY-MM-DD
+    const horaFormatada = agora.toTimeString().split(' ')[0]; // HH:MM:SS
+
+    const itensCupom = state.carrinho.map(item => ({
+        sku: item.sku,
+        ean: item.ean,
+        quantity: item.qtd,
+        product_name: item.sku,
+        unit_value: item.precoUnitario,
+        total_value: item.preco,
+        total_value_with_discount: item.precoComDesconto
+    }));
+
+    let pagamentos = [];
+    if (state.descontoFormaDePagamento > 0) {
+        pagamentos = [
+            { instalments: 1, payment_form: "cash", amount: state.pagDinheiro },
+            { instalments: 1, payment_form: "cashback", amount: state.descontoFormaDePagamento }
+        ];
+    } else {
+        pagamentos = [
+            { payment_form: "cash", amount: state.totalLiquido }
+        ];
+    }
+
     const payload = {
+        "transaction_id": state.transactionId,
         "client_id": state.documentNo,
-        "coupon": state.transactionId,
-        "date": "2020-01-01",
-        "items": itens,
-        "operator_id": "123",
-        "origin": "pdv-simulator",
+        "coupon": state.transactionId, // Usando o ID da transação como número do cupom
+        "date": dataFormatada,
+        "time": horaFormatada,
+        "items": itensCupom,
         "payments": pagamentos,
-        "pdv_code": "12A",
-        "time": "00:00:00",
         "total_value": state.totalGeral,
         "total_value_with_discount": state.totalLiquido,
-        "transaction_id": state.transactionId
+        "origin": "pdv",
+        "pdv_code": "12A",
+        "operator_id": "123"
     };
-    
-    if (state.descontoFormaDePagamento > 0) {
-        
-        pagamentos = [
-        {
-            "acquirer_id": "",
-            "acquirer_name": "",
-            "amount": state.pagDinheiro,
-            "authorizer_id": "",
-            "authorizer_name": "",
-            "instalments": 1,
-            "payment_form": "cash"
-        },
-        {
-            "acquirer_id": "",
-            "acquirer_name": "",
-            "amount": state.descontoFormaDePagamento,
-            "authorizer_id": "",
-            "authorizer_name": "",
-            "instalments": 1,
-            "payment_form": "cashback"
-        }]
-    } else {
-
-         pagamentos = [
-        {
-            "acquirer_id": "",
-            "acquirer_name": "",
-            "amount": state.totalLiquido,
-            "authorizer_id": "",
-            "authorizer_name": "",
-            "instalments": 1,
-            "payment_form": "cash"
-        }
-    ]
-    }
-    ;
 
     try {
         const res = await request('/v2/coupons', 'POST', payload);
@@ -292,12 +279,6 @@ export async function enviarCupom(itens,pagamentos) {
             UI.registrarLog("API CUPOM", 'error', { request: payload, response: data });
         }
     } catch (e) {
-        UI.registrarLog("API CUPOM", 'error', { request: payload, response: data });
+        UI.registrarLog("API CUPOM", 'error', { request: payload, response: data || "" });
     }
-}
-
-async function handleEnviarMensagem() {
-    const engine = getEngine(); 
-
-    await engine.processarSubtotal(); 
 }

@@ -22,13 +22,13 @@
                 <h2 style="color: var(--text-dark); text-align: center;">Configurações da conta</h2>
                 <div class="formulario-grid">
                     <div id="engine">
-                        <label for="input-doc-config">Engine (PDV)</label>
+                        <label for="janev22 consinco">Engine (PDV)</label>
                         <div >
                             <input type="radio" id="janev22" name="engine" value="janev22">
-                            <label for="pix">Jane - v2.2</label>
+                            <label for="janev22">Jane - v2.2</label>
 
-                            <input type="radio" id="cartao" name="engine" value="consinco">
-                            <label for="cartao">Consinco</label>
+                            <input type="radio" id="consinco" name="engine" value="consinco">
+                            <label for="consinco">Consinco</label>
                         </div>
                     </div>
                     <label for="input-doc-config">Número do Documento (CPF/CNPJ - Reuso):</label>
@@ -39,7 +39,18 @@
 
                     <label for="input-url-config">URL Base:</label>
                     <input type="text" id="input-url-config" class="input-padrao" placeholder="URL base da API">
+
+                    <label for="input-user-config">Usuário (Consinco):</label>
+                    <input type="text" id="input-user-config" class="input-padrao" placeholder="mercafacil">
+
+                    <label for="input-partnerCode-config">partnerCode (Consinco):</label>
+                    <input type="text" id="input-partnerCode-config" class="input-padrao" placeholder="1001">
+
+                    <label for="input-paymentCode-config">paymentCode (Consinco):</label>
+                    <input type="text" id="input-paymentCode-config" class="input-padrao" placeholder="40">
                 </div>
+
+                <span class="btn-fechar-modal" id="btn-fechar-config">&times;</span>
                 <button id="btn-confirmar-config" class="btn-padrao btn-gradient">Confirmar</button>
             </div>
         </div>

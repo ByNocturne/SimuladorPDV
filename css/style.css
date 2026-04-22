@@ -417,3 +417,18 @@ td {
     color: #333;
     font-size: 0.8rem;
 }
+
+.btn-fechar-modal {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-fechar-modal:hover {
+    color: #f44336; 
+}
