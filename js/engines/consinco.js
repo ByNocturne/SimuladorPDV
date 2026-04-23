@@ -1,5 +1,5 @@
 import { state } from '../state.js';
-//import { UI } from '../ui.js';
+import { UI } from '../ui.js';
 //import { getEngine } from './engineManager.js';
 
 async function request(endpoint, method = 'POST', body = null) {
@@ -59,7 +59,7 @@ export async function iniciarTransacao() {
             ],
             "Status": "sttValid"
         },
-        "ID": transactionIdConsinco,
+        "ID": state.transactionIdConsinco,
         "Increase": 0,
         "Items": [],
         "Messages": {

@@ -63,9 +63,9 @@ document.getElementById('btn-confirmar-config').onclick = () => {
         document.getElementById('input-token-config').value,
         docLimpo,
         document.querySelector('input[name="engine"]:checked').value,
-        document.querySelector('input-user-config"]:checked').value,
-        document.querySelector('input-partnerCode-config"]:checked').value,
-        document.querySelector('input-paymentCode-config"]:checked').value
+        document.getElementById('input-user-config').value,
+        document.getElementById('input-partnerCode-config').value,
+        document.getElementById('input-paymentCode-config').value
     );
     document.getElementById('modal-configuracoes').style.display = 'none';
     UI.registrarLog("Configurações atualizadas", "success");
