@@ -159,8 +159,8 @@ export async function processarSubtotal(itens) {
                 "Status": "sttValid",
                 "IdSegment": 1,
                 "OrderNumber": "",
-                "TotalPrice": i.price,
-                "UnitPrice": i.UnitPrice
+                "TotalPrice": i.preco,
+                "UnitPrice": i.precoUnitario
             }));
 
     if(state.vendaIniciada === false) {
@@ -263,12 +263,36 @@ console.log(payload);
             state.vendaFechada = true;
 
             UI.registrarLog("API PRE-APPLY", statusLog, { request: payload, response: data });
-
+/*
             if (data.should_display_message) {
                 UI.abrirModalMensagem(data.message.text, data.message, enviarMensagem);
             } else {
                 await aplicarDescontos();
-            }
+            }*/
+
+            //state.descontoFormaDePagamento = data?.payment_discount?.discount_value || 0;
+            //state.pagDinheiro = state.totalLiquido - state.descontoFormaDePagamento || 0;
+            //state.descontoRateio = data?.absolute?.discount_value || 0;
+
+            state.carrinho = data.Sale.Items.map(apiItem => ({
+                sku: apiItem.InternalCode,
+                ean: apiItem.BarCode,
+                qtd: parseFloat(apiItem.Quantity) || 0,
+                preco: parseFloat(apiItem.PartitionalDiscount.UnitPrice * apiItem.PartitionalDiscount.Quantity) || 0,
+                descontoItens: parseFloat(apiItem.PartitionalDiscount.Price) || 0,
+                precoComDesconto: parseFloat(apiItem.PartitionDiscount.TotalPrice) || 0,
+                descontoItemRateio: 0
+            }));
+            /*if (state.descontoRateio > 0) {
+                const subtotal = state.carrinho.reduce((acc, i) => acc + i.precoComDesconto, 0);
+                state.carrinho.forEach(item => {
+                    const proporcao = item.precoComDesconto / subtotal;
+                    item.descontoItemRateio = descontoRateio * proporcao;
+                    item.precoComDesconto -= item.descontoItemRateio;
+                })};*/
+
+console.log(state.carrinho)
+
         } else {
             UI.registrarLog("API PRE-APPLY", 'error', { request: payload, response: data });
         }
