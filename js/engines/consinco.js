@@ -86,7 +86,7 @@ export async function iniciarTransacao() {
 };
     
     try {
-        const res = await request('external/v2/consinco', 'POST', payload);
+        const res = await request('/external/v2/consinco', 'POST', payload);
         const data = await res.json();
         
         if (res.ok) {
@@ -138,30 +138,123 @@ export async function enviarMensagem(tag,value) {
         UI.registrarLog("Erro antes da comunicação com a API", 'error', { erro: e.message });  
     }
 }
+*/
+
 
 export async function processarSubtotal(itens) {
 
-    const itensFormatados = itens.map(i => ({
-        ean: i.ean, 
-        sku: i.sku, 
-        quantity: i.qtd, 
-        packing_quantity: 1, 
-        total_value: i.preco
-    }));
+    const itensFormatados = itens.map((i, index) => ({
+                "BarCode": i.ean,
+                "CaptionPacking": "UN",
+                "Description": i.sku,
+                "DiscountPrice": 0.000000000000000,
+                "IncreasePrice": 0.0000000000000000,
+                "InternalCode": i.sku,
+                "ItemNumber": index+1,
+                "PackingQuantity": 1.0000000000000000,
+                "PartitionDiscount": [],
+                "PartitionIncrease": [],
+                "Quantity": i.qtd,
+                "SellerCode": 0,
+                "Status": "sttValid",
+                "IdSegment": 1,
+                "OrderNumber": "",
+                "TotalPrice": i.price,
+                "UnitPrice": i.UnitPrice
+            }));
 
     if(state.vendaIniciada === false) {
         alert('Venda não iniciada')
         return
     }
 
+console.log(itensFormatados);
+
     const payload = {
-        "items": itensFormatados,
-        "origin": "pdv",
-        "transaction_id": state.transactionId
-    };
+        "Authenticator": null,
+        "Event": "cetAfter",
+        "Execution": "cetCompleted",
+        "ID": state.transactionId,
+        "Operation": "cotSubtotalSale",
+        "ParkingTicket": null,
+        "Pay": null,
+        "Response": "ok",
+        "Sale": {
+            "Discount": 0.0000000000000000,
+            "DiscountCodes": [],
+            "Header": {
+            "AccountingDate": state.dataConsinco,
+            "cooDocument": 1234,
+            "DateTimeIssue": state.dataHoraConsinco,
+            "IdDocument": 123,
+            "IdInvoiceKey": "",
+            "cooDocument": 1234,
+            "IdStore": 1,
+            "IdSupervisor": 0,
+            "IdTerminal": 1,
+            "IdUser": 1,
+            "Identification": [
+                {
+                "IdentificationType": "citReward",
+                "Document": state.documentNo,
+                "DocumentType": "cdtCPF",
+                "PartnerCode": state.PartnerCodeConsinco
+                }
+            ],
+            "Status": "sttValid"
+            },
+            "ID": state.transactionId,
+            "Increase": 0.0000000000000000,
+            "Items": itensFormatados,
+            "Messages": {
+            "Customer": [],
+            "User": []
+            },
+            "PartitionDiscount": [],
+            "PartitionIncrease": [],
+            "PaymentChange": null,
+            "Payments": [],
+            "Print": null,
+            "SolidaryChange": null,
+            "TaxDocument": null,
+            "Total": state.price,
+            "VouchersPrint": []
+        },
+        "UserAuthentication": null,
+        "Version": 1,
+        "interpret": {
+            "commandType": null,
+            "options": {
+            "title": null,
+            "subtitle": null,
+            "options": [],
+            "response": []
+            },
+            "value": {
+            "title": null,
+            "subtitle": null,
+            "dataType": null,
+            "Size": null,
+            "documentTypes": []
+            },
+            "vouchersPrint": {
+            "text": []
+            },
+            "messageCommand": {
+            "title": null,
+            "text": null,
+            "subtitle": null,
+            "defaultButton": null,
+            "messageType": null,
+            "buttons": []
+            }
+        }
+        };
+
+console.log(payload);
     
     try {
-        const res = await request('/v2.2/transaction/pre-apply', 'POST', payload);
+        const res = await request('/external/v2/consinco', 'POST', payload);
         const data = await res.json();
 
         if (res.ok) {
@@ -184,7 +277,7 @@ export async function processarSubtotal(itens) {
 
     }
 }   
-
+/*
 export async function aplicarDescontos() {
     const payload = {
         "transaction_id": state.transactionId

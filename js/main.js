@@ -23,7 +23,7 @@ async function handleFinalizarTransacao() {
 async function handleCancelarTransacao() {
     const engine = getEngine(); 
 
-    await engine.handleCancelarTransacao(state.carrinho); 
+    await engine.cancelarTransacao(state.carrinho); 
 }
 async function handleEnviarCupom() {
     const engine = getEngine(); 

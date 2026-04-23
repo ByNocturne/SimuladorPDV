@@ -118,6 +118,8 @@ export async function processarSubtotal(itens) {
             UI.registrarLog("API PRE-APPLY", 'error', { request: payload, response: data });
         }
     } catch (e) {
+        console.log("DEBUG - Objeto Final:", JSON.stringify(payload, null, 2));
+        console.trace("Rastro de execução");
         UI.registrarLog("Erro antes da comunicação com a API", 'error', { erro: e.message });  
 
     }
@@ -154,7 +156,7 @@ export async function aplicarDescontos() {
                 const subtotal = state.carrinho.reduce((acc, i) => acc + i.precoComDesconto, 0);
                 state.carrinho.forEach(item => {
                     const proporcao = item.precoComDesconto / subtotal;
-                    item.descontoItemRateio = descontoRateio * proporcao;
+                    item.descontoItemRateio = state.descontoRateio * proporcao;
                     item.precoComDesconto -= item.descontoItemRateio;
                 });
             }
