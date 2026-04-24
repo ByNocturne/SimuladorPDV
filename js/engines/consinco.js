@@ -142,7 +142,6 @@ export async function enviarMensagem(tag,value) {
 
 
 export async function processarSubtotal(itens) {
-
     const itensFormatados = itens.map((i, index) => ({
                 "BarCode": i.ean,
                 "CaptionPacking": "UN",
@@ -188,7 +187,6 @@ console.log(itensFormatados);
             "DateTimeIssue": state.dataHoraConsinco,
             "IdDocument": 123,
             "IdInvoiceKey": "",
-            "cooDocument": 1234,
             "IdStore": 1,
             "IdSupervisor": 0,
             "IdTerminal": 1,
@@ -198,7 +196,7 @@ console.log(itensFormatados);
                 "IdentificationType": "citReward",
                 "Document": state.documentNo,
                 "DocumentType": "cdtCPF",
-                "PartnerCode": state.PartnerCodeConsinco
+                "PartnerCode": state.partnerCodeConsinco
                 }
             ],
             "Status": "sttValid"
@@ -217,7 +215,7 @@ console.log(itensFormatados);
             "Print": null,
             "SolidaryChange": null,
             "TaxDocument": null,
-            "Total": state.price,
+            "Total": state.totalGeral,
             "VouchersPrint": []
         },
         "UserAuthentication": null,
@@ -274,15 +272,19 @@ console.log(payload);
             //state.pagDinheiro = state.totalLiquido - state.descontoFormaDePagamento || 0;
             //state.descontoRateio = data?.absolute?.discount_value || 0;
 
-            state.carrinho = data.Sale.Items.map(apiItem => ({
+            state.carrinho = vendaApi.Items.map(apiItem => {
+            const descontoAtivo = (apiItem.PartitionDiscount && apiItem.PartitionDiscount[0]) || {};
+
+            return {
                 sku: apiItem.InternalCode,
                 ean: apiItem.BarCode,
                 qtd: parseFloat(apiItem.Quantity) || 0,
-                preco: parseFloat(apiItem.PartitionalDiscount.UnitPrice * apiItem.PartitionalDiscount.Quantity) || 0,
-                descontoItens: parseFloat(apiItem.PartitionalDiscount.Price) || 0,
-                precoComDesconto: parseFloat(apiItem.PartitionDiscount.TotalPrice) || 0,
+                preco: parseFloat(apiItem.UnitPrice * apiItem.Quantity) || 0,
+                descontoItens: parseFloat(descontoAtivo.Price || 0) || 0, 
+                precoComDesconto: parseFloat(apiItem.TotalPrice) || 0,
                 descontoItemRateio: 0
-            }));
+                };
+            });
             /*if (state.descontoRateio > 0) {
                 const subtotal = state.carrinho.reduce((acc, i) => acc + i.precoComDesconto, 0);
                 state.carrinho.forEach(item => {
@@ -290,8 +292,9 @@ console.log(payload);
                     item.descontoItemRateio = descontoRateio * proporcao;
                     item.precoComDesconto -= item.descontoItemRateio;
                 })};*/
-
-console.log(state.carrinho)
+            state.totalLiquido = vendaApi.Total;
+            UI.renderizarCarrinho();
+            console.log(state.carrinho)
 
         } else {
             UI.registrarLog("API PRE-APPLY", 'error', { request: payload, response: data });
@@ -345,14 +348,97 @@ export async function aplicarDescontos() {
         UI.registrarLog("API APPLY", 'error', { request: payload, response: data });
     }
 }  
+ */   
 
 export async function finalizarTransacao() {
+    const itensFormatados = itens.map((i, index) => ({
+        "BarCode": i.ean,
+        "CaptionPacking": "UN",
+        "Description": i.sku,
+        "DiscountPrice": 0.000000000000000,
+        "IncreasePrice": 0.0000000000000000,
+        "InternalCode": i.sku,
+        "ItemNumber": index+1,
+        "PackingQuantity": 1.0000000000000000,
+        "PartitionDiscount": [],
+        "PartitionIncrease": [
+            {
+              "DiscountAmount": i.descontoItens,
+              "IncreDiscType": 6,
+              "PartnerCode": i.partnerCode,
+              "Price": i.precoComDesconto,
+              "PromotionCode": 0
+            }
+          ],
+        "Quantity": i.qtd,
+        "SellerCode": 0,
+        "Status": "sttValid",
+        "IdSegment": 1,
+        "OrderNumber": "",
+        "TotalPrice": i.preco,
+        "UnitPrice": i.precoUnitario
+    }));
+
     const payload = {
-        "transaction_id": state.transactionId
+        "iD": state.transactionId,
+        "pay": null,
+        "version": 1,
+        "sale": {
+            "iD": state.transactionId,
+            "increase": 0,
+            "discount": 0,
+            "total": state.totalGeral,
+            "header": {
+                "idStore": 1,
+                "idTerminal": 1,
+                "idDocument": 123,
+                "cooDocument": 1234,
+                "idUser": 1,
+                "status": "sttValid",
+                "idInvoiceKey": "",
+                "accountingDate": state.dataHoraConsinco,
+                "dateTimeIssue": state.dataConsinco,
+                "identification": [
+                    {
+                        "document": state.documentNo,
+                        "partnerCode": state.partnerCode,
+                        "documentType": "cdtCPF",
+                        "identificationType": "citInvoice"
+                    }
+                ]
+            },
+            "payments": [
+                {
+                    "expirationDateCard": "31/1",
+                    "firstDigitCard": "123456",
+                    "flagCard": "12345",
+                    "increase": 0,
+                    "installmentAmount": 1,
+                    "itemNumber": 1,
+                    "lastDigitCard": "1234",
+                    "networkCard": "12345",
+                    "total": state.totalLiquido,
+                    "discount": 0,
+                    "paymentType": "cptDebitCard",
+                    "paymentNumber": 118,
+                    "authorizationCode": "102776",
+                    "transactionCode": "000030933",
+                    "dateTimeIssue": state.dataConsinco
+                }
+            ],
+            "paymentChange": null,
+            "items": itensFormatados,
+            "messages": null,
+            "solidaryChange": null
+        },
+        "event": "cetAfter",
+        "operation": "cotEndSale",
+        "execution": "cetContinue",
+        "parkingTicket": null
     };
     
     try {
-        const res = await request('/v2.2/transaction/confirm', 'POST', payload);
+        const res = await request('/external/v2/consinco', 'POST', payload);
         const data = await res.json();
         
         if (res.ok) {
@@ -369,7 +455,7 @@ export async function finalizarTransacao() {
                 descontoFormaDePagamento: state.descontoFormaDePagamento,
                 somaDesconto: state.somaDesconto,
                 totalLiquido: state.totalLiquido,
-                carrinho: JSON.parse(JSON.stringify(state.carrinho)) // Cópia profunda
+                carrinho: JSON.parse(JSON.stringify(state.carrinho)) 
             };
 
             state.historicoCupons.push(novoCupom);
@@ -383,13 +469,14 @@ export async function finalizarTransacao() {
     }
 }
 
+
 export async function cancelarTransacao() {
     const payload = {
         "transaction_id": state.transactionId
     };
     
     try {
-        const res = await request('/v2.2/transaction/cancel', 'POST', payload);
+        const res = await request('/external/v2/consinco', 'POST', payload);
         const data = await res.json();
 
         if (res.ok) {
@@ -403,61 +490,3 @@ export async function cancelarTransacao() {
         UI.registrarLog("API CANCEL", 'error', { request: payload, response: data });
     }
 }
-
-export async function enviarCupom() {
-    const agora = new Date();
-    const dataFormatada = agora.toISOString().split('T')[0]; // YYYY-MM-DD
-    const horaFormatada = agora.toTimeString().split(' ')[0]; // HH:MM:SS
-
-    const itensCupom = state.carrinho.map(item => ({
-        sku: item.sku,
-        ean: item.ean,
-        quantity: item.qtd,
-        product_name: item.sku,
-        unit_value: item.precoUnitario,
-        total_value: item.preco,
-        total_value_with_discount: item.precoComDesconto
-    }));
-
-    let pagamentos = [];
-    if (state.descontoFormaDePagamento > 0) {
-        pagamentos = [
-            { instalments: 1, payment_form: "cash", amount: state.pagDinheiro },
-            { instalments: 1, payment_form: "cashback", amount: state.descontoFormaDePagamento }
-        ];
-    } else {
-        pagamentos = [
-            { payment_form: "cash", amount: state.totalLiquido }
-        ];
-    }
-
-    const payload = {
-        "transaction_id": state.transactionId,
-        "client_id": state.documentNo,
-        "coupon": state.transactionId, // Usando o ID da transação como número do cupom
-        "date": dataFormatada,
-        "time": horaFormatada,
-        "items": itensCupom,
-        "payments": pagamentos,
-        "total_value": state.totalGeral,
-        "total_value_with_discount": state.totalLiquido,
-        "origin": "pdv",
-        "pdv_code": "12A",
-        "operator_id": "123"
-    };
-
-    try {
-        const res = await request('/v2/coupons', 'POST', payload);
-        const data = await res.json();
-
-    if (res.ok) {
-        const statusLog = res.ok ? 'success' : 'error';
-
-        UI.registrarLog("API CUPOM", statusLog, { request: payload, response: data });   
-    } else {
-            UI.registrarLog("API CUPOM", 'error', { request: payload, response: data });
-        }
-    } catch (e) {
-        UI.registrarLog("API CUPOM", 'error', { request: payload, response: data || "" });
-    }
-}*/
