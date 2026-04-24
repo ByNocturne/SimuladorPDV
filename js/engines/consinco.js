@@ -256,7 +256,9 @@ console.log(payload);
         const data = await res.json();
 
         if (res.ok) {
-            const statusLog = res.ok ? 'success' : 'error';
+            const statusLog = 'success';
+    
+            const vendaApi = data.Sale || data; 
 
             state.vendaFechada = true;
 
@@ -273,16 +275,16 @@ console.log(payload);
             //state.descontoRateio = data?.absolute?.discount_value || 0;
 
             state.carrinho = vendaApi.Items.map(apiItem => {
-            const descontoAtivo = (apiItem.PartitionDiscount && apiItem.PartitionDiscount[0]) || {};
+                const descontoAtivo = (apiItem.PartitionDiscount && apiItem.PartitionDiscount[0]) || {};
 
-            return {
-                sku: apiItem.InternalCode,
-                ean: apiItem.BarCode,
-                qtd: parseFloat(apiItem.Quantity) || 0,
-                preco: parseFloat(apiItem.UnitPrice * apiItem.Quantity) || 0,
-                descontoItens: parseFloat(descontoAtivo.Price || 0) || 0, 
-                precoComDesconto: parseFloat(apiItem.TotalPrice) || 0,
-                descontoItemRateio: 0
+                return {
+                    sku: apiItem.InternalCode,
+                    ean: apiItem.BarCode,
+                    qtd: parseFloat(apiItem.Quantity) || 0,
+                    preco: parseFloat(apiItem.UnitPrice * apiItem.Quantity) || 0,
+                    descontoItens: parseFloat(descontoAtivo.Price || 0) || 0, 
+                    precoComDesconto: parseFloat(apiItem.TotalPrice) || 0,
+                    descontoItemRateio: 0
                 };
             });
             /*if (state.descontoRateio > 0) {
@@ -292,8 +294,12 @@ console.log(payload);
                     item.descontoItemRateio = descontoRateio * proporcao;
                     item.precoComDesconto -= item.descontoItemRateio;
                 })};*/
+
             state.totalLiquido = vendaApi.Total;
+            state.totalGeral = vendaApi.Total + (vendaApi.Discount || 0);
+
             UI.renderizarCarrinho();
+            UI.registrarLog("API PRE-APPLY (CONSINCO)", statusLog, { request: payload, response: data });
             console.log(state.carrinho)
 
         } else {
