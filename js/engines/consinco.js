@@ -256,53 +256,49 @@ console.log(payload);
         const data = await res.json();
 
         if (res.ok) {
-            const statusLog = 'success';
-    
-            const vendaApi = data.Sale || data; 
+    const statusLog = 'success';
 
-            state.vendaFechada = true;
+    // 1. Acha a raiz certa (seja dentro de body.sale ou só sale)
+    const vendaApi = data.body?.sale || data.sale || data.Sale || data;
 
-            UI.registrarLog("API PRE-APPLY", statusLog, { request: payload, response: data });
-/*
-            if (data.should_display_message) {
-                UI.abrirModalMensagem(data.message.text, data.message, enviarMensagem);
-            } else {
-                await aplicarDescontos();
-            }*/
+    state.vendaFechada = true;
 
-            //state.descontoFormaDePagamento = data?.payment_discount?.discount_value || 0;
-            //state.pagDinheiro = state.totalLiquido - state.descontoFormaDePagamento || 0;
-            //state.descontoRateio = data?.absolute?.discount_value || 0;
+    // 2. Pega o desconto de Rateio (os R$ 15.00 globais)
+    const descontoVenda = (vendaApi.PartitionDiscount && vendaApi.PartitionDiscount[0]) || {};
+    state.descontoRateio = parseFloat(descontoVenda.Price || 0);
 
-            state.carrinho = vendaApi.Items.map(apiItem => {
-                const descontoAtivo = (apiItem.PartitionDiscount && apiItem.PartitionDiscount[0]) || {};
+    // 3. O SEU MAP EXATAMENTE COMO VOCÊ FEZ (que está certíssimo)
+    state.carrinho = vendaApi.items.map(apiItem => {
+        const descontoAtivo = (apiItem.PartitionDiscount && apiItem.PartitionDiscount[0]) || {};
 
-                return {
-                    sku: apiItem.InternalCode,
-                    ean: apiItem.BarCode,
-                    qtd: parseFloat(apiItem.Quantity) || 0,
-                    preco: parseFloat(apiItem.UnitPrice * apiItem.Quantity) || 0,
-                    descontoItens: parseFloat(descontoAtivo.Price || 0) || 0, 
-                    precoComDesconto: parseFloat(apiItem.TotalPrice) || 0,
-                    descontoItemRateio: 0
-                };
-            });
-            /*if (state.descontoRateio > 0) {
-                const subtotal = state.carrinho.reduce((acc, i) => acc + i.precoComDesconto, 0);
-                state.carrinho.forEach(item => {
-                    const proporcao = item.precoComDesconto / subtotal;
-                    item.descontoItemRateio = descontoRateio * proporcao;
-                    item.precoComDesconto -= item.descontoItemRateio;
-                })};*/
+        const valorLiquido = parseFloat(apiItem.TotalPrice || 0); 
+        const valorDesconto = parseFloat(descontoAtivo.Price || 0); 
 
-            state.totalLiquido = vendaApi.Total;
-            state.totalGeral = vendaApi.Total + (vendaApi.Discount || 0);
+        return {
+            sku: apiItem.InternalCode,
+            ean: apiItem.BarCode,
+            qtd: parseFloat(apiItem.Quantity) || 0,
+            preco: valorLiquido + valorDesconto, // 20 + 10 = 30
+            descontoItens: valorDesconto, // 10
+            precoComDesconto: valorLiquido, // 20
+            descontoItemRateio: 0
+        };
+    });
 
-            UI.renderizarCarrinho();
-            UI.registrarLog("API PRE-APPLY (CONSINCO)", statusLog, { request: payload, response: data });
-            console.log(state.carrinho)
+    // 4. Rateio (Para o Total Líquido bater com os R$ 5.00 do JSON!)
+    if (state.descontoRateio > 0) {
+        const subtotal = state.carrinho.reduce((acc, i) => acc + i.precoComDesconto, 0);
+        state.carrinho.forEach(item => {
+            const proporcao = item.precoComDesconto / subtotal;
+            item.descontoItemRateio = state.descontoRateio * proporcao;
+            item.precoComDesconto -= item.descontoItemRateio; // Subtrai os 15
+        });
+    }
 
-        } else {
+    // 5. Renderiza a tela
+    UI.renderizarCarrinho();
+    UI.registrarLog("API PRE-APPLY (CONSINCO)", statusLog, { request: payload, response: data });
+}else {
             UI.registrarLog("API PRE-APPLY", 'error', { request: payload, response: data });
         }
     } catch (e) {
