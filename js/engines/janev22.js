@@ -2,19 +2,36 @@ import { state } from '../state.js';
 import { UI } from '../ui.js';
 import { getEngine } from './engineManager.js';
 
-async function request(endpoint, method = 'POST', body = null) {
+async function executarChamadaAPI(endpoint, method, payload, nomeOperacao) {
+    const urlCompleta = state.urlBase + endpoint
+
     const headers = {
         'Authorization': `Bearer ${state.token}`,
         'Content-Type': 'application/json'
     };
-    
-    const response = await fetch(`${state.urlBase}${endpoint}`, {
-        method,
-        headers,
-        body: body ? JSON.stringify(body) : null
-    });
-    
-    return response;
+
+    try {
+        const res = await fetch(urlCompleta, 
+                                {
+                                    method: method,
+                                    headers: headers,
+                                    body: JSON.stringify(payload)
+                                });
+        const data = await res.json();
+
+        if (res.ok) {
+            UI.registrarLog(nomeOperacao, 'success', { request: payload, response: data }, endpoint);
+            return data; // Devolve os dados para quem chamou decidir o que fazer
+        } else {
+            UI.registrarLog(nomeOperacao, 'error', { request: payload, response: data }, endpoint);
+            UI.exibirAlerta(`Erro na operação ${nomeOperacao}`); // UX: Avisa o usuário
+            return null;
+        }
+    } catch (e) {
+        UI.registrarLog(nomeOperacao, 'error', { erro: e.message });
+        UI.exibirAlerta("Falha de conexão com o servidor.");
+        return null;
+    }
 }
 
 export async function iniciarTransacao() {
@@ -22,27 +39,17 @@ export async function iniciarTransacao() {
         "transaction_context": { "document_no": state.documentNo, "phone": "" },
         "transaction_id": ""
     };
-    
-    try {
-        const res = await request('/v2.2/transaction/start', 'POST', payload);
-        const data = await res.json();
-        
-        if (res.ok) {
-            const statusLog = res.ok ? 'success' : 'error';
-            state.transactionId = data.transaction_id; 
+    const endpoint = '/v2.2/transaction/start'
+    const method = 'POST'
+    const nomeOperacao = 'Iniciar Transação'
 
-            state.vendaIniciada = true
+    const res = await executarChamadaAPI(endpoint, method, payload, nomeOperacao);
 
-            UI.registrarLog("API START", statusLog, { request: payload, response: data });
+    state.transactionId = res.transaction_id
 
-            if (data.should_display_message) {
-                UI.abrirModalMensagem(data.message.text, data.message, enviarMensagem);
-            }
-        } else {
-            UI.registrarLog("API START", 'error', { request: payload, response: data });
-        }
-    } catch (e) { 
-        UI.registrarLog("Erro antes da comunicação com a API", 'error', { erro: e.message }); 
+    if (res.should_display_message) {
+        UI.abrirModalMensagem(res.message.text, res.message, enviarMensagem);
+        state.vendaIniciada = true;
     }
 }
 
@@ -52,29 +59,20 @@ export async function enviarMensagem(tag,value) {
             "tag": tag, 
             "transaction_id": state.transactionId 
         };
+    const endpoint = '/v2.2/transaction/message'
+    const method = 'POST'
+    const nomeOperacao = 'Enviar resposta de Mensagem'
+
+    const res = await executarChamadaAPI(endpoint, method, payload, nomeOperacao);
     
-    try {
-        const res = await request('/v2.2/transaction/message', 'POST', payload);
-        const data = await res.json();
-
-        if (res.ok) {
-            const statusLog = res.ok ? 'success' : 'error';
-
-            UI.registrarLog("API MESSAGE", statusLog, { request: payload, response: data });
-
-            if (data.should_display_message) {
-                UI.abrirModalMensagem(data.message.text, data.message, enviarMensagem);
-            } else if (state.vendaFechada) {
-                await aplicarDescontos();
-            } else {
-                state.vendaIniciada = true;
-            }
-        } else {
-            UI.registrarLog("API MESSAGE", 'error', { request: payload, response: data });
-        }
-    } catch (e) { 
-        UI.registrarLog("Erro antes da comunicação com a API", 'error', { erro: e.message });  
+    if (res.should_display_message) {
+        UI.abrirModalMensagem(res.message.text, res.message, enviarMensagem);
+    } else if (state.vendaFechada) {
+        await aplicarDescontos();
+    } else {
+        state.vendaIniciada = true;
     }
+
 }
 
 export async function processarSubtotal(itens) {

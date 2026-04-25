@@ -42,7 +42,7 @@ export const UI = {
         document.getElementById('valor-liquido').innerText = `R$ ${state.totalLiquido.toFixed(3)}`;
     },
 
-    registrarLog(mensagem, status, dados = null) {
+    registrarLog(mensagem, status, dados = null, endpoint) {
         const corpoTabela = document.getElementById('corpo-tabela-logs');
         const logFooter = document.getElementById('log-tempo-real');
         const agora = new Date().toLocaleTimeString();
@@ -60,19 +60,37 @@ export const UI = {
         // 2. Adiciona à tabela de histórico (View de Logs)
         if (corpoTabela) {
             const tr = document.createElement('tr');
-            const request = dados?.request ? JSON.stringify(dados.request) : "---";
-            const response = dados?.response ? JSON.stringify(dados.response): "---";
+            tr.className = 'linha-log-clicavel';
 
             tr.innerHTML = `
                 <td>${state.transactionId || '---'}</td>
                 <td>${agora}</td>
                 <td><span class="status-badge status-${status}">${status}</span></td>
                 <td>${mensagem}</td>
-                <td title='Clique para ver'>${request}</td>
-                <td title='Clique para ver'>${response}</td>
+                <td id="request-log">Clique para ver</td>
+                <td id="response-log">Clique para ver</td>
             `;
+
+            const tdRequest = tr.cells[4];
+            const tdResponse = tr.cells[5];
+
+            // Configura o clique para a coluna de Request
+            tdRequest.onclick = () => {
+                const conteudo = dados?.request ? JSON.stringify(dados.request, null, 2) : "-";
+                this.mostrarDetalhesLog(mensagem, "REQUEST", conteudo, endpoint);
+            };
+
+            // Configura o clique para a coluna de Response
+            tdResponse.onclick = () => {
+                const conteudo = dados?.response ? JSON.stringify(dados.response, null, 2) : "-";
+                this.mostrarDetalhesLog(mensagem, "RESPONSE", conteudo, endpoint);
+            };
             corpoTabela.prepend(tr); // Adiciona o mais recente no topo
         }
+    },
+
+    exibirAlerta: function(mensagem) {
+        alert(mensagem); 
     },
 
     alternarView(view) {
@@ -128,13 +146,38 @@ export const UI = {
             const btn = document.createElement('button');
             btn.innerText = res.button;
             btn.className = 'btn-padrao btn-gradient btn-messagem';
+
             btn.onclick = () => {
-                const val = document.getElementById('campo-digitacao')?.value || "";
-                if (res.end_message_flow) modal.style.display = 'none';
+                const inputElement = document.getElementById('campo-digitacao');
+                const val = inputElement ? inputElement.value : "";
+
+                if (res.end_message_flow) {
+                    modal.style.display = 'none';
+                }
+
+                if (typeof callback === 'function') {
                 callback(res.tag, val);
+            }
             };
             container.appendChild(btn);
         });
+    },
+
+    mostrarDetalhesLog(titulo, tipo, conteudo, endpoint) {
+        const modal = document.getElementById('modal-detalhes-log');
+        const campoTitulo = document.getElementById('mensagem-log');
+        const campoTipo = document.getElementById('tipo-log');
+        const campoEndpoint = document.getElementById('endpoint-log');
+        const campoConteudo = document.getElementById('detalhe-log');
+
+        if (modal) {
+            campoTitulo.textContent = titulo;
+            campoTipo.textContent = tipo;
+            campoEndpoint.textContent = `Endpoint: ${endpoint}`; // Exibe o endpoint aqui
+            campoConteudo.textContent = conteudo;
+
+            modal.style.display = 'flex';
+        }
     },
 
     abrirModalCupom(dadosHistorico = null) {
