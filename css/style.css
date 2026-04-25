@@ -370,6 +370,13 @@ td {
     padding: 20px;
 }
 
+.container-gerenciador-dados {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 20px;
+}
+
 .card-cupom {
     background: white;
     border: 1px solid #ddd;

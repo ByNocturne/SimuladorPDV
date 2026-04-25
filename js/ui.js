@@ -97,14 +97,17 @@ export const UI = {
         const pdv = document.getElementById('view-pdv');
         const log = document.getElementById('view-log');
         const cupom = document.getElementById('view-cupom');
+        const dados = document.getElementById('view-dados');
         const menuPDV = document.querySelector('.item-menu:nth-child(1)');
         const menuLog = document.querySelector('.item-menu:nth-child(3)');
         const menuCupom = document.querySelector('.item-menu:nth-child(4)');
+        const menuDados = document.querySelector('.item-menu:nth-child(5)');
 
         pdv.style.display = 'none';
         log.style.display = 'none';
         cupom.style.display = 'none';
-        
+        dados.style.display = 'none';
+
         if (view === 'pdv') {
             pdv.style.display = 'block';
             menuPDV.classList.add('ativo');
@@ -122,6 +125,12 @@ export const UI = {
             menuCupom.classList.add('ativo');
 
             UI.renderizarHistoricoCupons();
+        }else if (view === 'dados') {
+            dados.style.display = 'block';
+            menuPDV.classList.remove('ativo');
+            menuLog.classList.remove('ativo');
+            menuCupom.classList.remove('ativo');
+            menuDados.classList.add('ativo');
         }
     },
 
