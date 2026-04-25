@@ -49,8 +49,7 @@ Para manter o código organizado, o simulador é dividido em responsabilidades c
 
 ## Fluxo de comunicação das APIs (Separado por Engines)
 
-### Jane - v2.2
-
+```mermaid
 graph TD
     A[Início da Venda] --> B[Rota: /v2.2/transaction/start]
     B --> C{Há mensagem?}
@@ -90,6 +89,7 @@ graph TD
     R
     S
     end
+```
 
 ## Guia de operação
 
