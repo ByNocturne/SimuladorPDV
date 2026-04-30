@@ -283,5 +283,13 @@ export const UI = {
             `;
             container.appendChild(card);
         });
+    },
+
+    fecharModal(idModal) {
+        const modal = document.getElementById(idModal);
+        if (modal) {
+            modal.style.display = 'none';
+        }
     }
 }
+

@@ -72,7 +72,7 @@
         
         <div id="modal-cupom" style="display: none;">
             <div class="modal-conteudo">
-                <button class="modal-close-btn" aria-label="Fechar">
+                <button onclick="UI.fecharModal('modal-cupom')" class="modal-close-btn" aria-label="Fechar">
                     <span class="icon-cross"></span>
                 </button>
                 <button onclick="cancelarCupom()" id="btn-cancelar-cupom" class="btn-padrao btn-cancelar">Cancelar Cupom</button>
@@ -187,11 +187,7 @@
 
             <div id="view-cupom" style="display: none;">
                 <h2 class="dark-texto">Histórico de Cupons</h2>
-                <div class="container-historico-cupons">
-                    <button class="modal-close-btn" aria-label="Fechar">
-                        <span class="icon-cross"></span>
-                    </button>
-                </div>
+                <div class="container-historico-cupons"></div>
             </div>
 
             <div id="view-dados" style="display: none;">
