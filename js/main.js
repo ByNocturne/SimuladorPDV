@@ -20,12 +20,12 @@ async function handleSubtotal() {
 async function handleFinalizarTransacao() {
     const engine = getEngine(); 
 
-    await engine.finalizarTransacao(state.carrinho); 
+    await engine.finalizarTransacao(); 
 }
 async function handleCancelarTransacao() {
     const engine = getEngine(); 
 
-    await engine.cancelarTransacao(state.carrinho); 
+    await engine.cancelarTransacao(); 
 }
 async function handleEnviarCupom() {
     const engine = getEngine(); 
@@ -35,20 +35,26 @@ async function handleEnviarCupom() {
 async function handleCancelarCupom() {
     const engine = getEngine(); 
 
-    await engine.cancelarCupom(state.carrinho); 
+    await engine.cancelarCupom(); 
 }
 
 const fecharModais = () => {
-    const modais = [
+    const modaisIds = [
         'modal-configuracoes', 
         'modal-detalhes-log', 
         'modal-cupom'
     ];
-    modais.forEach(id => {
+    modaisIds.forEach(id => {
         const modal = document.getElementById(id);
         if (modal) modal.style.display = 'none';
     });
 };
+
+document.addEventListener('click', (event) => {
+    if (event.target.classList.contains('modal-close-btn')) {
+        fecharModais();
+    }
+});
 
 document.querySelectorAll('.modal-close-btn').forEach(btn => {
     btn.addEventListener('click', fecharModais);
