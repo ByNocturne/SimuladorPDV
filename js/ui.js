@@ -252,6 +252,7 @@ export const UI = {
                 </div>
                 <br>
                 <button onclick="document.getElementById('modal-cupom').style.display='none'" class="btn-padrao btn-gradient" style="width: 100%">Fechar</button>
+                <button onclick="document.getElementById('modal-cupom').style.display='none'" class="btn-padrao btn-cancelar" style="width: 100%">Cancelar Cupom</button>
             </div>
         `;
 

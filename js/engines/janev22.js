@@ -61,7 +61,7 @@ export async function enviarMensagem(tag,value) {
         };
     const endpoint = '/v2.2/transaction/message'
     const method = 'POST'
-    const nomeOperacao = 'Enviar resposta de Mensagem'
+    const nomeOperacao = 'Enviar resposta de mensagem'
 
     const res = await executarChamadaAPI(endpoint, method, payload, nomeOperacao);
     
@@ -76,7 +76,6 @@ export async function enviarMensagem(tag,value) {
 }
 
 export async function processarSubtotal(itens) {
-
     const itensFormatados = itens.map(i => ({
         ean: i.ean, 
         sku: i.sku, 
@@ -95,112 +94,90 @@ export async function processarSubtotal(itens) {
         "origin": "pdv",
         "transaction_id": state.transactionId
     };
-    
-    try {
-        const res = await request('/v2.2/transaction/pre-apply', 'POST', payload);
-        const data = await res.json();
 
-        if (res.ok) {
-            const statusLog = res.ok ? 'success' : 'error';
+    const endpoint = '/v2.2/transaction/pre-apply'
+    const method = 'POST'
+    const nomeOperacao = 'Enviar carrinho'
 
-            state.vendaFechada = true;
+    const res = await executarChamadaAPI(endpoint, method, payload, nomeOperacao);
 
-            UI.registrarLog("API PRE-APPLY", statusLog, { request: payload, response: data });
-
-            if (data.should_display_message) {
-                UI.abrirModalMensagem(data.message.text, data.message, enviarMensagem);
-            } else {
-                await aplicarDescontos();
-            }
+    if (res.ok) {
+        state.vendaFechada = true;
+        if (res.should_display_message) {
+            UI.abrirModalMensagem(res.message.text, res.message, enviarMensagem);
         } else {
-            UI.registrarLog("API PRE-APPLY", 'error', { request: payload, response: data });
+            await aplicarDescontos();
         }
-    } catch (e) {
-        console.log("DEBUG - Objeto Final:", JSON.stringify(payload, null, 2));
-        console.trace("Rastro de execução");
-        UI.registrarLog("Erro antes da comunicação com a API", 'error', { erro: e.message });  
-
-    }
+    } else {
+        state.vendaFechada = false;
+    }    
+    
 }   
 
 export async function aplicarDescontos() {
     const payload = {
         "transaction_id": state.transactionId
     };
-    
-    try {
-        const res = await request('/v2.2/transaction/apply', 'POST', payload);
-        const data = await res.json();
 
-        if (res.ok) {
-            const statusLog = res.ok ? 'success' : 'error';
+    const endpoint = '/v2.2/transaction/apply'
+    const method = 'POST'
+    const nomeOperacao = 'Solicitar aplicação de descontos'
 
-            UI.registrarLog("API APPLY", statusLog, { request: payload, response: data });
+    const res = await executarChamadaAPI(endpoint, method, payload, nomeOperacao);
 
-            state.descontoFormaDePagamento = data?.payment_discount?.discount_value || 0;
-            state.pagDinheiro = state.totalLiquido - state.descontoFormaDePagamento || 0;
-            state.descontoRateio = data?.absolute?.discount_value || 0;
+    if (res.ok) {
+        state.descontoFormaDePagamento = res?.payment_discount?.discount_value || 0;
+        state.pagDinheiro = state.totalLiquido - state.descontoFormaDePagamento || 0;
+        state.descontoRateio = res?.absolute?.discount_value || 0;
 
-            state.carrinho = data.items.map(apiItem => ({
-                sku: apiItem.sku,
-                ean: apiItem.ean,
-                qtd: parseFloat(apiItem.quantity) || 0,
-                preco: parseFloat(apiItem.total_value_without_discount) || 0,
-                descontoItens: parseFloat(apiItem.discount_value) || 0,
-                precoComDesconto: parseFloat(apiItem.total_value_with_discount) || 0,
-                descontoItemRateio: 0
-            }));
-            if (state.descontoRateio > 0) {
-                const subtotal = state.carrinho.reduce((acc, i) => acc + i.precoComDesconto, 0);
-                state.carrinho.forEach(item => {
-                    const proporcao = item.precoComDesconto / subtotal;
-                    item.descontoItemRateio = state.descontoRateio * proporcao;
-                    item.precoComDesconto -= item.descontoItemRateio;
-                });
-            }
-            UI.renderizarCarrinho();
-        } else {
-            UI.registrarLog("API APPLY", 'error', { request: payload, response: data });
+        state.carrinho = res.items.map(apiItem => ({
+            sku: apiItem.sku,
+            ean: apiItem.ean,
+            qtd: parseFloat(apiItem.quantity) || 0,
+            preco: parseFloat(apiItem.total_value_without_discount) || 0,
+            descontoItens: parseFloat(apiItem.discount_value) || 0,
+            precoComDesconto: parseFloat(apiItem.total_value_with_discount) || 0,
+            descontoItemRateio: 0
+        }));
+        if (state.descontoRateio > 0) {
+            const subtotal = state.carrinho.reduce((acc, i) => acc + i.precoComDesconto, 0);
+            state.carrinho.forEach(item => {
+                const proporcao = item.precoComDesconto / subtotal;
+                item.descontoItemRateio = state.descontoRateio * proporcao;
+                item.precoComDesconto -= item.descontoItemRateio;
+            });
         }
-    } catch (e) {
-        UI.registrarLog("API APPLY", 'error', { request: payload, response: data });
+        UI.renderizarCarrinho();
     }
-}  
+}
 
 export async function finalizarTransacao() {
     const payload = {
         "transaction_id": state.transactionId
     };
-    
-    try {
-        const res = await request('/v2.2/transaction/confirm', 'POST', payload);
-        const data = await res.json();
+
+    const endpoint = '/v2.2/transaction/confirm'
+    const method = 'POST'
+    const nomeOperacao = 'Enviar finalização de venda'
+
+    const res = await executarChamadaAPI(endpoint, method, payload, nomeOperacao);
         
-        if (res.ok) {
-            const statusLog = res.ok ? 'success' : 'error';
+    if (res.ok) {
+        const novoCupom = {
+            transactionId: state.transactionId,
+            data: new Date().toLocaleString('pt-BR'),
+            totalGeral: state.totalGeral,
+            somaDescontoItens: state.somaDescontoItens,
+            descontoRateio: state.descontoRateio,
+            descontoFormaDePagamento: state.descontoFormaDePagamento,
+            somaDesconto: state.somaDesconto,
+            totalLiquido: state.totalLiquido,
+            carrinho: JSON.parse(JSON.stringify(state.carrinho)) // Cópia profunda
+        };
 
-            UI.registrarLog("API CONFIRM", statusLog, { request: payload, response: data }); 
+        state.historicoCupons.push(novoCupom);
 
-            const novoCupom = {
-                transactionId: state.transactionId,
-                data: new Date().toLocaleString('pt-BR'),
-                totalGeral: state.totalGeral,
-                somaDescontoItens: state.somaDescontoItens,
-                descontoRateio: state.descontoRateio,
-                descontoFormaDePagamento: state.descontoFormaDePagamento,
-                somaDesconto: state.somaDesconto,
-                totalLiquido: state.totalLiquido,
-                carrinho: JSON.parse(JSON.stringify(state.carrinho)) // Cópia profunda
-            };
-
-            state.historicoCupons.push(novoCupom);
-
-            UI.abrirModalCupom(novoCupom);       
-        } else {
-            UI.registrarLog("API CONFIRM", 'error', { request: payload, response: data });
-        }
-    } catch (e) {
-        UI.registrarLog("API CONFIRM", 'error', { request: payload, response: data });
+        UI.abrirModalCupom(novoCupom);       
     }
 }
 
@@ -208,21 +185,12 @@ export async function cancelarTransacao() {
     const payload = {
         "transaction_id": state.transactionId
     };
-    
-    try {
-        const res = await request('/v2.2/transaction/cancel', 'POST', payload);
-        const data = await res.json();
 
-        if (res.ok) {
-            const statusLog = res.ok ? 'success' : 'error';
+    const endpoint = '/v2.2/transaction/cancel'
+    const method = 'POST'
+    const nomeOperacao = 'Enviar cancelamento de venda'
 
-            UI.registrarLog("API CANCEL", statusLog, { request: payload, response: data });   
-        } else {
-            UI.registrarLog("API CANCEL", 'error', { request: payload, response: data });
-        }
-    } catch (e) {
-        UI.registrarLog("API CANCEL", 'error', { request: payload, response: data });
-    }
+    const res = await executarChamadaAPI(endpoint, method, payload, nomeOperacao);
 }
 
 export async function enviarCupom() {
@@ -267,18 +235,21 @@ export async function enviarCupom() {
         "operator_id": "123"
     };
 
-    try {
-        const res = await request('/v2/coupons', 'POST', payload);
-        const data = await res.json();
+    const endpoint = '/v2/coupons'
+    const method = 'POST'
+    const nomeOperacao = 'Enviar cupom'
 
-    if (res.ok) {
-        const statusLog = res.ok ? 'success' : 'error';
+    const res = await executarChamadaAPI(endpoint, method, payload, nomeOperacao);
+}
 
-        UI.registrarLog("API CUPOM", statusLog, { request: payload, response: data });   
-    } else {
-            UI.registrarLog("API CUPOM", 'error', { request: payload, response: data });
-        }
-    } catch (e) {
-        UI.registrarLog("API CUPOM", 'error', { request: payload, response: data || "" });
-    }
+export async function cancelarCupom() {
+    const payload = {
+        "coupon": state.transactionId // Usando o ID da transação como número do cupom
+    };
+
+    const endpoint = '/v2/coupons-cancellation'
+    const method = 'POST'
+    const nomeOperacao = 'Enviar cancelamento de venda'
+
+    const res = await executarChamadaAPI(endpoint, method, payload, nomeOperacao);
 }
