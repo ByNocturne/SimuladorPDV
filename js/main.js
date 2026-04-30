@@ -30,10 +30,9 @@ async function handleEnviarCupom() {
 
     await engine.enviarCupom(state.carrinho); 
 }
-async function handleCancelarCupom() {
+async function handleCancelarCupom(idDoCupom) {
     const engine = getEngine(); 
-
-    await engine.cancelarCupom(); 
+    await engine.cancelarCupom(idDoCupom); 
 }
 
 const fecharModais = () => {
@@ -69,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Event Listeners Globais
-window.alternarView = UI.alternarView; 
+window.alternarView = UI.alternarView.bind(UI); 
 window.abrirConfiguracoes = () => document.getElementById('modal-configuracoes').style.display = 'flex';
 
 document.getElementById('btn-confirmar-config').onclick = () => {
@@ -132,3 +131,8 @@ window.enviarFinalizarTransacao = handleFinalizarTransacao;
 window.enviarCancelarTransacao = handleCancelarTransacao;
 window.enviarCupom = handleEnviarCupom;
 window.cancelarCupom = handleCancelarCupom;
+window.fecharModais = fecharModais;
+
+window.handleAlternarView = (view) => {
+    UI.alternarView(view);
+};

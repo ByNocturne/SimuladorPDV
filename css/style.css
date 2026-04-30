@@ -33,21 +33,72 @@ body {
     width: 100vw;
 }
 
-/* Barra Lateral */
-.barra-lateral {
-    width: 260px;
-    background-color: var(--brand-navy);
-    color: var(--text-light);
-    display: flex;
-    flex-direction: column;
-    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
-    z-index: 10;
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 100vh; /* Ocupa 100% da altura da tela */
+  background-color: var(--cor-sidebar-bg);
+  color: var(--cor-sidebar-texto);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1); /* Sombra para dar profundidade */
+  z-index: 1000; /* Garante que fique por cima do resto */
+  transition: all 0.3s ease;
 }
 
-.logo-container {
-    padding: 30px 20px;
-    text-align: center;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+.sidebar-logo {
+  padding: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.sidebar-logo h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.5rem;
+}
+
+.sidebar-nav {
+  flex-grow: 1; /* Faz o menu empurrar o footer para baixo */
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Espaço entre os botões */
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  padding: 12px 24px;
+  text-decoration: none;
+  color: var(--cor-sidebar-texto);
+  font-weight: 500;
+  transition: all 0.2s;
+  border-left: 4px solid transparent; /* Truque de sênior para o hover */
+}
+
+.sidebar-link:hover {
+  background-color: var(--cor-sidebar-hover);
+  color: #fff;
+  border-left: 4px solid var(--cor-destaque);
+}
+
+.sidebar-link.ativo {
+  background-color: var(--cor-sidebar-hover);
+  color: #fff;
+  border-left: 4px solid var(--cor-destaque);
+}
+
+.sidebar-link .icone {
+  font-size: 1.2rem;
+  margin-right: 16px;
+}
+
+body {
+  margin: 0;
+  padding-left: 250px;
 }
 
 .logo-texto {
@@ -64,8 +115,6 @@ body {
 .dark-texto { 
     color: var(--text-dark)
 }
-
-.menu-navegacao { padding: 20px 0; flex-grow: 1; }
 
 .item-menu {
     display: block;
@@ -528,4 +577,35 @@ td {
 
 .texto-cancelado div {
     color: #cc0000 !important;
+}
+
+/* ==========================================================================
+   📱 RESPONSIVIDADE - Mobile
+   ========================================================================== */
+@media (max-width: 768px) {
+    html, body {
+        overflow-y: auto !important; 
+        height: auto !important;
+    }
+
+    .layout-sistema {
+        flex-direction: column !important;
+        height: auto !important;
+        width: 100% !important;
+        overflow-y: visible !important; 
+    }
+
+    .area-principal, 
+    .painel-venda, 
+    .painel-produtos, 
+    .painel-cupom {
+        width: 100% !important;
+        padding: 10px !important;
+        margin: 0 !important;
+        height: auto !important;
+    }
+
+    .grid-produtos {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+    }
 }

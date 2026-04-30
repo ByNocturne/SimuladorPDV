@@ -5,11 +5,12 @@
     <title>Simulador de PDV - Mercafacil</title>
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
     <div class="layout-sistema">
-
+        
         <div id="modal-mensagens" style="display: none;">
             <div class="modal-conteudo-mensagens">
                 <h2 id="texto-mensagem"></h2>
@@ -78,24 +79,38 @@
             </div>
         </div>
 
-        <aside class="barra-lateral">
-            <div class="logo-container">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
                 <img src="mercafacil.png" alt="Logo Mercafacil" style="width: 100px; height: auto;">
                 <span class="logo-texto">Mercafacil</span>
                 <h3 class="light-texto">Simulador PDV</h3>
             </div>
             
-            <nav class="menu-navegacao">
-                <a href="#" class="item-menu ativo" onclick="alternarView('pdv')">🛒 PDV</a>
-                <a href="#" class="item-menu" onclick="abrirConfiguracoes()">⚙️ Configurações</a>
-                <a href="#" class="item-menu" onclick="alternarView('log')">🔍 Histórico de Logs</a>
-                <a href="#" class="item-menu" onclick="alternarView('cupom')">🧾 Histórico de Cupons</a>
-                <a href="#" class="item-menu" onclick="alternarView('dados')">🎲 Gerenciador de Dados</a>
-            </nav>
+            <nav class="sidebar-nav" >
+                <a href="#" onclick="alternarView('pdv')" class="sidebar-link ativo">
+                <span class="icone">🛒</span>
+                <span class="texto">PDV</span>
+                </a>
 
-            <div class="menu-texto" style="color: white; padding: 20px; font-size: 0.8em; opacity: 0.6;">
-                v2.1.0
-            </div>
+                <a href="#" onclick="abrirConfiguracoes()"  class="sidebar-link">
+                <span class="icone">⚙️</span>
+                <span class="texto">Configurações</span>
+                </a>
+                
+                <a href="#" onclick="alternarView('historico')" class="sidebar-link">
+                <span class="icone">📜</span>
+                <span class="texto">🔍 Histórico de Logs</span>
+                </a>
+
+                <a href="#" onclick="alternarView('cupom')" class="sidebar-link">
+                <span class="icone">📜</span>
+                <span class="texto">🔍 Histórico de Cupons</span>
+                </a>
+                
+                <div class="menu-texto" style="color: white; padding: 20px; font-size: 0.8em; opacity: 0.6;">
+                    v2.1.0
+                </div>
+            </nav>
         </aside>
 
         <main class="conteudo-principal">
@@ -186,7 +201,7 @@
 
             <div id="view-cupom" style="display: none;">
                 <h2 class="dark-texto">Histórico de Cupons</h2>
-                <div class="container-historico-cupons"></div>
+                <div id="lista-historico-cupons" class="container-historico-cupons"></div>
             </div>
 
             <div id="view-dados" style="display: none;">

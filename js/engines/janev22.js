@@ -260,19 +260,26 @@ export async function enviarCupom() {
 export async function cancelarCupom(idDoModal) {
     const idAlvo = idDoModal || state.transactionId;
     
-    if (!idAlvo) return UI.exibirAlerta("Sem transação para cancelar.");
+    if (!idAlvo) {
+        UI.exibirAlerta("Sem transação para cancelar.");
+        return;
+    }
 
     const payload = { "coupon": idAlvo };
     const res = await executarChamadaAPI('/v2/coupons-cancellation', 'POST', payload, 'Cancelar Cupom');
     
     if (res) {
-        const cupomNoEstado = state.historicoCupons.find(c => c.transactionId === idAlvo);
+        // Busca na memória (String() garante que Número e Texto vão ser lidos iguais)
+        const cupomNoEstado = state.historicoCupons.find(c => String(c.transactionId) === String(idAlvo));
+        
         if (cupomNoEstado) {
             cupomNoEstado.status = 'CANCELED';
             
-            // Redesenha o modal se ele estiver aberto (Tela)
+            UI.renderizarHistoricoCupons();
+            
             UI.abrirModalCupom(cupomNoEstado);
         }
-        UI.exibirAlerta("Cupom cancelado!");
+        
+        UI.exibirAlerta("Cupom cancelado com sucesso!");
     }
 }
