@@ -406,6 +406,7 @@ td {
 
 .modal-conteudo, .modal-conteudo-mensagens {
     background: white;
+    position: relative;
     padding: 30px;
     border-radius: 12px;
     width: 450px;
@@ -430,18 +431,13 @@ td {
 }
 
 .btn-fechar-modal {
-    position: absolute;
     top: 10px;
     right: 15px;
     font-size: 28px;
     font-weight: bold;
-    color: #aaa;
+    color: var(--accent-gradient);
     cursor: pointer;
     transition: 0.3s;
-}
-
-.btn-fechar-modal:hover {
-    color: #f44336; 
 }
 
 #tipo-log {
@@ -450,4 +446,61 @@ td {
 
 #mensagem-log {
     color: var(--text-dark);
+}
+
+/* Container do botão */
+.modal-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 32px;
+    height: 32px;
+    background-color: #f0f0f0; /* Fundo neutro */
+    border: none;
+    border-radius: 50%; /* Deixa redondo */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease; /* Transição suave para o hover */
+    z-index: 10;
+}
+
+/* Efeito ao passar o mouse */
+.modal-close-btn:hover {
+    background-color: #e74c3c; /* Vermelho suave ao focar */
+    transform: rotate(90deg); /* Gira o X para dar um charme */
+}
+
+/* Criando o ícone de X com linhas CSS */
+.icon-cross {
+    position: relative;
+    width: 15px;
+    height: 15px;
+}
+
+.icon-cross::before, .icon-cross::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background-color: #333; /* Cor do X */
+    transition: background-color 0.3s ease;
+}
+
+/* Altera a cor das linhas quando o botão recebe hover */
+.modal-close-btn:hover .icon-cross::before,
+.modal-close-btn:hover .icon-cross::after {
+    background-color: white;
+}
+
+/* Inclina as linhas para formar o X */
+.icon-cross::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.icon-cross::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
 }

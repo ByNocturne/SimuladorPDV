@@ -3,6 +3,8 @@ import { getEngine } from './engines/engineManager.js';
 import { UI } from './ui.js';
 import * as utils from './utils.js'
 
+let engine = getEngine(); 
+
 async function handleIniciarTransacao() {
     const engine = getEngine(); 
 
@@ -30,6 +32,12 @@ async function handleEnviarCupom() {
 
     await engine.enviarCupom(state.carrinho); 
 }
+async function handleCancelarCupom() {
+    const engine = getEngine(); 
+
+    await engine.cancelarCupom(state.carrinho); 
+}
+
 
 document.addEventListener('DOMContentLoaded', () => {
     UI.renderizarCarrinho();
@@ -62,7 +70,7 @@ document.getElementById('btn-confirmar-config').onclick = () => {
         document.getElementById('input-url-config').value,
         document.getElementById('input-token-config').value,
         docLimpo,
-        document.querySelector('input[name="engine"]:checked').value,
+        document.querySelector('input[name="engine"]:checked').value || UI.exibirAlerta("Selecione uma Engine para continuar."),
         document.getElementById('input-user-config').value,
         document.getElementById('input-partnerCode-config').value,
         document.getElementById('input-paymentCode-config').value
@@ -71,17 +79,31 @@ document.getElementById('btn-confirmar-config').onclick = () => {
     UI.registrarLog("Configurações atualizadas", "success");
 };
 
-document.getElementById('btn-fechar-config').onclick = () => {
-    document.getElementById('modal-configuracoes').style.display = 'none';
-    UI.registrarLog("Configurações atualizadas", "success");
-}
+document.getElementById('close-modal').addEventListener('click', () => {
+    const modalConfiguracoes = document.getElementById('modal-configuracoes');
+    const modalCupom = document.getElementById('modal-cupom');
+    const modalLog = document.getElementById('modal-log');
+
+    modalConfiguracoes.style.display = 'none';
+    modalCupom.style.display = 'none';
+    modalLog.style.display = 'none';
+});
 
 // Se clickar fora do modal, fecha
 window.onclick = (event) => {
-    const modal = document.getElementById('modal-configuracoes');
+    const modalConfiguracoes = document.getElementById('modal-configuracoes');
+    const modalCupom = document.getElementById('modal-cupom');
+    const modalLog = document.getElementById('modal-log');
 
-    if (event.target == modal) {
-        modal.style.display = 'none';
+
+    if (event.target == modalConfiguracoes) {
+        modalConfiguracoes.style.display = 'none';
+    }
+    if (event.target == modalCupom) {
+        modalCupom.style.display = 'none';
+    }
+    if (event.target == modalLog) {
+        modalLog.style.display = 'none';
     }
 }
 
@@ -113,3 +135,4 @@ window.enviarSubtotal = handleSubtotal;
 window.enviarFinalizarTransacao = handleFinalizarTransacao;
 window.enviarCancelarTransacao = handleCancelarTransacao;
 window.enviarCupom = handleEnviarCupom;
+window.cancelarCupom = handleCancelarCupom;

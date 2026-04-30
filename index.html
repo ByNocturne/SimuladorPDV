@@ -24,7 +24,7 @@
                     <div id="engine">
                         <label for="janev22 consinco">Engine (PDV)</label>
                         <div >
-                            <input type="radio" id="janev22" name="engine" value="janev22">
+                            <input type="radio" id="janev22" name="engine" value="janev22" checked>
                             <label for="janev22">Jane - v2.2</label>
 
                             <input type="radio" id="consinco" name="engine" value="consinco">
@@ -48,10 +48,13 @@
 
                     <label for="input-paymentCode-config">paymentCode (Consinco):</label>
                     <input type="text" id="input-paymentCode-config" class="input-padrao" placeholder="40">
-                </div>
 
-                <span class="btn-fechar-modal" id="btn-fechar-config">&times;</span>
-                <button id="btn-confirmar-config" class="btn-padrao btn-gradient">Confirmar</button>
+                    <button class="modal-close-btn" id="close-modal" aria-label="Fechar">
+                        <span class="icon-cross"></span>
+                    </button>
+
+                    <button id="btn-confirmar-config" class="btn-padrao btn-gradient">Confirmar</button>
+                </div>
             </div>
         </div>
 
@@ -61,12 +64,20 @@
                 <h3 id="tipo-log"></h3> 
                 <h4 id="endpoint-log"></h4> 
                 <pre id="detalhe-log"></pre>
-                <button onclick="document.getElementById('modal-detalhes-log').style.display='none'">Fechar</button>
+                <button class="modal-close-btn" id="close-detalhes-log" aria-label="Fechar">
+                    <span class="icon-cross"></span>
+                </button>
             </div>
         </div>
         
         <div id="modal-cupom" style="display: none;">
-            <span>Olá</span>
+            <div class="modal-conteudo">
+                <h2 id="mensagem-cupom"></h2>
+                <pre id="detalhe-cupom"></pre>
+                <button class="modal-close-btn" id="close-modal" aria-label="Fechar">
+                    <span class="icon-cross"></span>
+                </button>
+            </div>
         </div>
 
         <aside class="barra-lateral">
@@ -85,7 +96,7 @@
             </nav>
 
             <div class="menu-texto" style="color: white; padding: 20px; font-size: 0.8em; opacity: 0.6;">
-                v2.0.0
+                v2.1.0
             </div>
         </aside>
 

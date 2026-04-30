@@ -21,10 +21,10 @@ async function executarChamadaAPI(endpoint, method, payload, nomeOperacao) {
 
         if (res.ok) {
             UI.registrarLog(nomeOperacao, 'success', { request: payload, response: data }, endpoint);
-            return data; // Devolve os dados para quem chamou decidir o que fazer
+            return data; 
         } else {
             UI.registrarLog(nomeOperacao, 'error', { request: payload, response: data }, endpoint);
-            UI.exibirAlerta(`Erro na operação ${nomeOperacao}`); // UX: Avisa o usuário
+            UI.exibirAlerta(`Erro na operação ${nomeOperacao}`);
             return null;
         }
     } catch (e) {
@@ -67,10 +67,12 @@ export async function enviarMensagem(tag,value) {
     
     if (res.should_display_message) {
         UI.abrirModalMensagem(res.message.text, res.message, enviarMensagem);
-    } else if (state.vendaFechada) {
-        await aplicarDescontos();
     } else {
-        state.vendaIniciada = true;
+        document.getElementById('modal-mensagens').style.display = 'none'; 
+        
+        if (state.vendaFechada) { 
+            await aplicarDescontos(); 
+        }
     }
 
 }
@@ -101,7 +103,7 @@ export async function processarSubtotal(itens) {
 
     const res = await executarChamadaAPI(endpoint, method, payload, nomeOperacao);
 
-    if (res.ok) {
+    if (res) {
         state.vendaFechada = true;
         if (res.should_display_message) {
             UI.abrirModalMensagem(res.message.text, res.message, enviarMensagem);
@@ -125,7 +127,7 @@ export async function aplicarDescontos() {
 
     const res = await executarChamadaAPI(endpoint, method, payload, nomeOperacao);
 
-    if (res.ok) {
+    if (res) {
         state.descontoFormaDePagamento = res?.payment_discount?.discount_value || 0;
         state.pagDinheiro = state.totalLiquido - state.descontoFormaDePagamento || 0;
         state.descontoRateio = res?.absolute?.discount_value || 0;
@@ -137,7 +139,8 @@ export async function aplicarDescontos() {
             preco: parseFloat(apiItem.total_value_without_discount) || 0,
             descontoItens: parseFloat(apiItem.discount_value) || 0,
             precoComDesconto: parseFloat(apiItem.total_value_with_discount) || 0,
-            descontoItemRateio: 0
+            descontoItemRateio: 0,
+            precoUnitario: parseFloat(apiItem.total_value_without_discount / apiItem.quantity) || 0
         }));
         if (state.descontoRateio > 0) {
             const subtotal = state.carrinho.reduce((acc, i) => acc + i.precoComDesconto, 0);
@@ -162,7 +165,7 @@ export async function finalizarTransacao() {
 
     const res = await executarChamadaAPI(endpoint, method, payload, nomeOperacao);
         
-    if (res.ok) {
+    if (res) {
         const novoCupom = {
             transactionId: state.transactionId,
             data: new Date().toLocaleString('pt-BR'),
@@ -211,12 +214,24 @@ export async function enviarCupom() {
     let pagamentos = [];
     if (state.descontoFormaDePagamento > 0) {
         pagamentos = [
-            { instalments: 1, payment_form: "cash", amount: state.pagDinheiro },
-            { instalments: 1, payment_form: "cashback", amount: state.descontoFormaDePagamento }
+            { 
+                instalments: 1, 
+                payment_form: "cash", 
+                amount: state.pagDinheiro 
+            },
+            { 
+                instalments: 1, 
+                payment_form: "cashback", 
+                amount: state.descontoFormaDePagamento 
+            }
         ];
     } else {
         pagamentos = [
-            { payment_form: "cash", amount: state.totalLiquido }
+            { 
+                payment_form: "cash",
+                amount: state.totalLiquido,
+                instalments: 1 
+            }
         ];
     }
 
@@ -252,4 +267,6 @@ export async function cancelarCupom() {
     const nomeOperacao = 'Enviar cancelamento de venda'
 
     const res = await executarChamadaAPI(endpoint, method, payload, nomeOperacao);
+
+    exibirAlerta("Cupom cancelado com sucesso!");
 }
