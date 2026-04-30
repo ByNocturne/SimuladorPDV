@@ -218,7 +218,6 @@ export const UI = {
 
         modal.innerHTML = `
             <div class="cupom">
-                <button class="modal-close-btn"">x</button>
                 <h2 style="text-align: center;">CUPOM FISCAL</h2>
                 <p style="text-align: center;">Mercafacil - Simulação PDV</p>
                 <p>ID Transação: ${dados.transactionId || '---'}</p>
@@ -252,7 +251,7 @@ export const UI = {
                     <h3 style="margin: 0;">TOTAL LÍQUIDO: R$ ${dados.totalLiquido.toFixed(2)}</h3>
                 </div>
                 <br>
-                <button id="btn-cancelar-cupom" class="btn-padrao btn-cancelar">Cancelar Cupom</button>
+                <button id="btn-cancelar-cupom" onclick="cancelarCupom()" class="btn-padrao btn-cancelar">Cancelar Cupom</button>
             </div>
         `;
         modal.style.display = 'flex';
@@ -285,13 +284,6 @@ export const UI = {
             `;
             container.appendChild(card);
         });
-    },
-
-    fecharModal(idModal) {
-        const modal = document.getElementById(idModal);
-        if (modal) {
-            modal.style.display = 'none';
-        }
     }
 }
 
