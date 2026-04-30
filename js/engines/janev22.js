@@ -259,14 +259,17 @@ export async function enviarCupom() {
 
 export async function cancelarCupom() {
     const payload = {
-        "coupon": state.transactionId // Usando o ID da transação como número do cupom
+        "coupon": state.transactionId 
     };
 
-    const endpoint = '/v2/coupons-cancellation'
-    const method = 'POST'
-    const nomeOperacao = 'Enviar cancelamento de venda'
+    const endpoint = '/v2/coupons-cancellation';
+    const method = 'POST';
+    const nomeOperacao = 'Enviar cancelamento de cupom';
 
     const res = await executarChamadaAPI(endpoint, method, payload, nomeOperacao);
-
-    exibirAlerta("Cupom cancelado com sucesso!");
+    
+    if (res) {
+        UI.exibirAlerta("Cupom cancelado com sucesso!");
+        document.getElementById('modal-cupom').style.display = 'none';
+    }
 }

@@ -251,14 +251,8 @@ export const UI = {
                     <h3 style="margin: 0;">TOTAL LÍQUIDO: R$ ${dados.totalLiquido.toFixed(2)}</h3>
                 </div>
                 <br>
-                <button class="modal-close-btn" id="close-modal" aria-label="Fechar">
-                    <span class="icon-cross"></span>
-                </button>
-                <button onclick="cancelarCupom()" id="btn-cancelar-cupom" class="btn-padrao btn-cancelar">Cancelar Cupom</button>
             </div>
         `;
-        document.getElementById('close-modal').onclick = () => modal.style.display = 'none';
-
         modal.style.display = 'flex';
     },
 

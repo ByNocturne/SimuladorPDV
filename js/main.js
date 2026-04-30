@@ -38,6 +38,21 @@ async function handleCancelarCupom() {
     await engine.cancelarCupom(state.carrinho); 
 }
 
+const fecharModais = () => {
+    const modais = [
+        'modal-configuracoes', 
+        'modal-detalhes-log', 
+        'modal-cupom'
+    ];
+    modais.forEach(id => {
+        const modal = document.getElementById(id);
+        if (modal) modal.style.display = 'none';
+    });
+};
+
+document.querySelectorAll('.modal-close-btn').forEach(btn => {
+    btn.addEventListener('click', fecharModais);
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     UI.renderizarCarrinho();
@@ -78,34 +93,11 @@ document.getElementById('btn-confirmar-config').onclick = () => {
     document.getElementById('modal-configuracoes').style.display = 'none';
     UI.registrarLog("Configurações atualizadas", "success");
 };
-
-document.getElementById('close-modal').addEventListener('click', () => {
-    const modalConfiguracoes = document.getElementById('modal-configuracoes');
-    const modalCupom = document.getElementById('modal-cupom');
-    const modalLog = document.getElementById('modal-log');
-
-    modalConfiguracoes.style.display = 'none';
-    modalCupom.style.display = 'none';
-    modalLog.style.display = 'none';
-});
-
-// Se clickar fora do modal, fecha
 window.onclick = (event) => {
-    const modalConfiguracoes = document.getElementById('modal-configuracoes');
-    const modalCupom = document.getElementById('modal-cupom');
-    const modalLog = document.getElementById('modal-log');
-
-
-    if (event.target == modalConfiguracoes) {
-        modalConfiguracoes.style.display = 'none';
+    if (event.target.id && event.target.id.startsWith('modal-')) {
+        event.target.style.display = 'none';
     }
-    if (event.target == modalCupom) {
-        modalCupom.style.display = 'none';
-    }
-    if (event.target == modalLog) {
-        modalLog.style.display = 'none';
-    }
-}
+};
 
 document.getElementById('btn-iniciar-venda').onclick = handleIniciarTransacao;
 
