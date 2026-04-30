@@ -268,13 +268,13 @@ export async function cancelarCupom() {
 
     const res = await executarChamadaAPI(endpoint, method, payload, nomeOperacao);
     
-    if (res) {
-        UI.exibirAlerta("Cupom cancelado com sucesso!");
+    const cupomCancelado = state.historicoCupons.find(c => c.transactionId === state.transactionId);
 
-        document.getElementById('modal-cupom').style.display = 'none';
-
-        res.status = 'CANCELADO'; 
+    if (cupomCancelado) {
+        cupomCancelado.status = 'CANCELED';
         
-        UI.abrirModalCupom(res); 
+        UI.abrirModalCupom(cupomCancelado);
+        
+        UI.renderizarHistoricoCupons(); 
     }
 }

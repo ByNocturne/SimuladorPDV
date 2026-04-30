@@ -51,7 +51,7 @@ const fecharModais = () => {
 };
 
 document.addEventListener('click', (event) => {
-    if (event.target.classList.contains('modal-close-btn')) {
+    if (event.target.closest('.modal-close-btn')) {
         fecharModais();
     }
 });

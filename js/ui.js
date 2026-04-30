@@ -290,10 +290,13 @@ export const UI = {
 
         state.historicoCupons.forEach((cupom, index) => {
             const card = document.createElement('div');
-            if (dados.status === 'CANCELED' || dados.status === 'CANCELADO') {
-                linhaDaTabela.classList.add('texto-cancelado');
+            card.className = 'card-cupom'; // Define a classe base do card
+            
+            // Corrige de 'dados' para 'cupom' e de 'linhaDaTabela' para 'card'
+            if (cupom.status === 'CANCELED' || cupom.status === 'CANCELADO') {
+                card.classList.add('texto-cancelado');
             }
-            card.className = 'card-cupom';
+            
             card.onclick = () => this.abrirModalCupom(cupom); 
 
             card.innerHTML = `
