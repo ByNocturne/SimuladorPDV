@@ -266,7 +266,6 @@ export async function cancelarCupom(idDoModal) {
     const res = await executarChamadaAPI('/v2/coupons-cancellation', 'POST', payload, 'Cancelar Cupom');
     
     if (res) {
-        // Atualiza o status no histórico (Memória)
         const cupomNoEstado = state.historicoCupons.find(c => c.transactionId === idAlvo);
         if (cupomNoEstado) {
             cupomNoEstado.status = 'CANCELED';

@@ -3,8 +3,6 @@ import { getEngine } from './engines/engineManager.js';
 import { UI } from './ui.js';
 import * as utils from './utils.js'
 
-let engine = getEngine(); 
-
 async function handleIniciarTransacao() {
     const engine = getEngine(); 
 
