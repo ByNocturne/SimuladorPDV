@@ -206,6 +206,24 @@ export const UI = {
 
         let itensHtml = "";
 
+        const isCancelado = dados.status === 'CANCELED' || dados.status === 'CANCELADO';
+
+        const classeDoCupom = isCancelado ? 'cupom cupom-cancelado' : 'cupom';
+
+        const areaAcaoCupom = isCancelado 
+            ? `<h3 class="texto-cancelado" style="text-align: center; margin-top: 15px;">🚫 CUPOM CANCELADO</h3>`
+            : `<button id="btn-cancelar-cupom" style="width: 100%; margin-top: 15px;">Cancelar Cupom</button>`;
+
+        modal.innerHTML = `
+            <div class="${classeDoCupom}" style="position: relative;">
+                <h2 style="text-align: center;">CUPOM FISCAL</h2>
+                <p>ID Transação: ${dados.transactionId || '---'}</p>
+                
+                <hr>
+                ${areaAcaoCupom}
+            </div>
+        `;
+
         dados.carrinho.forEach((item, index) => {
             itensHtml += `
                 <div class="item-cupom-linha" style="margin-bottom: 10px;">
@@ -218,6 +236,9 @@ export const UI = {
 
         modal.innerHTML = `
             <div class="cupom">
+                <button class="modal-close-btn" aria-label="Fechar">
+                    <span class="icon-cross"></span>
+                </button>
                 <h2 style="text-align: center;">CUPOM FISCAL</h2>
                 <p style="text-align: center;">Mercafacil - Simulação PDV</p>
                 <p>ID Transação: ${dados.transactionId || '---'}</p>
@@ -269,6 +290,9 @@ export const UI = {
 
         state.historicoCupons.forEach((cupom, index) => {
             const card = document.createElement('div');
+            if (dados.status === 'CANCELED' || dados.status === 'CANCELADO') {
+                linhaDaTabela.classList.add('texto-cancelado');
+            }
             card.className = 'card-cupom';
             card.onclick = () => this.abrirModalCupom(cupom); 
 

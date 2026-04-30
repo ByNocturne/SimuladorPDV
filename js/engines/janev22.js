@@ -270,6 +270,11 @@ export async function cancelarCupom() {
     
     if (res) {
         UI.exibirAlerta("Cupom cancelado com sucesso!");
+
         document.getElementById('modal-cupom').style.display = 'none';
+
+        res.status = 'CANCELADO'; 
+        
+        UI.abrirModalCupom(res); 
     }
 }

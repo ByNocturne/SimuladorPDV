@@ -419,6 +419,7 @@ td {
 
 .cupom {
     background: white;
+    position: relative;
     padding: 20px;
     width: 600px;
     max-height: 80vh;
@@ -430,6 +431,16 @@ td {
     font-size: 0.8rem;
 }
 
+.btn-fechar-modal {
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    color: var(--accent-gradient);
+    cursor: pointer;
+    transition: 0.3s;
+}
+
 #tipo-log {
     color: var(--brand-purple);
 }
@@ -437,6 +448,25 @@ td {
 #mensagem-log {
     color: var(--text-dark);
 }
+
+/* Container do botão */
+.modal-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 32px;
+    height: 32px;
+    background-color: #f0f0f0; /* Fundo neutro */
+    border: none;
+    border-radius: 50%; /* Deixa redondo */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease; /* Transição suave para o hover */
+    z-index: 10;
+}
+
 /* Efeito ao passar o mouse */
 .modal-close-btn:hover {
     background-color: #e74c3c; /* Vermelho suave ao focar */
@@ -478,4 +508,14 @@ td {
 
 #btn-cancelar-cupom {
     width: 100%;
+}
+
+.texto-cancelado {
+    color: #e74c3c !important;
+    font-weight: bold;
+}
+
+.cupom-cancelado {
+    background-color: #ffebee; 
+    border: 2px dashed #e74c3c;
 }
