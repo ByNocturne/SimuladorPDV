@@ -519,3 +519,13 @@ td {
     background-color: #ffebee; 
     border: 2px dashed #e74c3c;
 }
+
+.texto-cancelado {
+    border-left: 5px solid #ff4444 !important;
+    background-color: #fff1f1 !important;
+    opacity: 0.8;
+}
+
+.texto-cancelado div {
+    color: #cc0000 !important;
+}

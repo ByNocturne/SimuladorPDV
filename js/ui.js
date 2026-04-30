@@ -189,128 +189,87 @@ export const UI = {
         }
     },
 
-    abrirModalCupom(dadosHistorico = null) {
+    abrirModalCupom(cupom) {
         const modal = document.getElementById('modal-cupom');
-        
-        const dados = dadosHistorico || {
-            transactionId: state.transactionId,
-            totalGeral: state.totalGeral,
-            somaDesconto: state.somaDesconto,
-            somaDescontoItens: state.somaDescontoItens,
-            totalLiquido: state.totalLiquido,
-            descontoRateio: state.descontoRateio,
-            descontoFormaDePagamento: state.descontoFormaDePagamento,
-            carrinho: state.carrinho,
-            pagDinheiro: state.pagDinheiro
-        };
+        if (!modal) return;
 
-        let itensHtml = "";
-
-        const isCancelado = dados.status === 'CANCELED' || dados.status === 'CANCELADO';
-
-        const classeDoCupom = isCancelado ? 'cupom cupom-cancelado' : 'cupom';
-
-        const areaAcaoCupom = isCancelado 
-            ? `<h3 class="texto-cancelado" style="text-align: center; margin-top: 15px;">🚫 CUPOM CANCELADO</h3>`
-            : `<button id="btn-cancelar-cupom" style="width: 100%; margin-top: 15px;">Cancelar Cupom</button>`;
+        // Código Limpo: Usando a variável real do seu projeto
+        const itensDoCupom = cupom.carrinho || [];
+        const estaCancelado = cupom.status === 'CANCELED';
 
         modal.innerHTML = `
-            <div class="${classeDoCupom}" style="position: relative;">
-                <h2 style="text-align: center;">CUPOM FISCAL</h2>
-                <p>ID Transação: ${dados.transactionId || '---'}</p>
-                
-                <hr>
-                ${areaAcaoCupom}
-            </div>
-        `;
-
-        dados.carrinho.forEach((item, index) => {
-            itensHtml += `
-                <div class="item-cupom-linha" style="margin-bottom: 10px;">
-                    <span>#${index + 1} SKU: ${item.sku} | Qtd: ${item.qtd} | Bruto: R$ ${item.preco.toFixed(2)}</span>
-                    ${item.descontoItens > 0 ? `<div style="color: green; font-size: 0.7rem; margin-left: 20px;">Desc. Item: - R$ ${item.descontoItens.toFixed(2)}</div>` : ''}
-                    ${item.descontoItemRateio > 0 ? `<div style="color: purple; font-size: 0.7rem; margin-left: 20px;">Rateio: - R$ ${item.descontoItemRateio.toFixed(2)}</div>` : ''}
-                    <div style="text-align: right; font-weight: bold;">Líquido: R$ ${item.precoComDesconto.toFixed(2)}</div>
-                </div>`;
-        });
-
-        modal.innerHTML = `
-            <div class="cupom">
-                <button class="modal-close-btn" aria-label="Fechar">
-                    <span class="icon-cross"></span>
-                </button>
-                <h2 style="text-align: center;">CUPOM FISCAL</h2>
-                <p style="text-align: center;">Mercafacil - Simulação PDV</p>
-                <p>ID Transação: ${dados.transactionId || '---'}</p>
-                <hr>
-                <div id="lista-itens-cupom-interno">${itensHtml}</div>
-                <hr>
-                <div style="text-align: right;">
-                    <p>Total Bruto: R$ ${dados.totalGeral.toFixed(2)}</p>
-                    <p>Total Desc. Itens: R$ ${dados.somaDescontoItens.toFixed(2)}</p>
-
-                    ${dados.descontoRateio > 0 ? `
-                        <div font-size: 0.7rem; margin-left: 20px;">
-                            Desc. Rateio: - R$ ${dados.descontoRateio.toFixed(2)}
-                        </div>
-                    ` : ''}
-                    <p>Total Descontos: R$ ${dados.somaDesconto.toFixed(2)}</p>
+            <div class="modal-content">
+                <button class="modal-close-btn" onclick="fecharModais()">×</button>
+                <h2 style="color: ${estaCancelado ? '#ff4444' : 'var(--brand-navy)'}">
+                    ${estaCancelado ? 'CUPOM CANCELADO' : 'DETALHES DO CUPOM'}
+                </h2>
+                <div class="cupom-fiscal">
+                    <p>ID: ${cupom.transactionId}</p>
                     <hr>
-
-                    <p>Pagamentos</p>
-                    ${dados.descontoFormaDePagamento > 0 ? `
-                        <div style="font-size: 0.7rem; margin-left: 20px;">
-                            <p>Desc. Forma de Pag.: R$ ${dados.descontoFormaDePagamento.toFixed(2)}</p>
-                            <p>Dinheiro: R$ ${dados.pagDinheiro.toFixed(2)}
+                    ${itensDoCupom.map(item => `
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                            <span>${item.qtd}x ${item.sku}</span>
+                            <span>R$ ${item.preco.toFixed(2)}</span>
                         </div>
-                    ` : 
-                        `<div style="font-size: 0.7rem; margin-left: 20px;">
-                            <p>Dinheiro: R$ ${dados.descontoFormaDePagamento.toFixed(2)}</p>
-                        </div>`}
+                    `).join('')}
                     <hr>
-                    
-                    <h3 style="margin: 0;">TOTAL LÍQUIDO: R$ ${dados.totalLiquido.toFixed(2)}</h3>
+                    <p><strong>Total: R$ ${cupom.totalLiquido.toFixed(2)}</strong></p>
                 </div>
-                <br>
-                <button id="btn-cancelar-cupom" onclick="cancelarCupom()" class="btn-padrao btn-cancelar">Cancelar Cupom</button>
+                
+                ${!estaCancelado ? `
+                    <button id="btn-cancelar-cupom" 
+                            class="btn-acao-secundaria" 
+                            style="margin-top: 15px; width: 100%; background-color: #ff4444;"
+                            onclick="window.handleCancelarCupom('${cupom.transactionId}')">
+                        Cancelar Este Cupom
+                    </button>
+                ` : ''}
             </div>
         `;
-        modal.style.display = 'flex';
+
+        modal.style.display = 'block';
     },
 
-    renderizarHistoricoCupons() {
-        const container = document.querySelector('.container-historico-cupons');
-        if (!container) return;
-        container.innerHTML = '';
+    abrirModalCupom(cupom) {
+        const modal = document.getElementById('modal-cupom');
+        if (!modal) return;
 
-        if (state.historicoCupons.length === 0) {
-            container.innerHTML = '<p style="color: #666; padding: 20px;">Nenhum cupom finalizado ainda.</p>';
-            return;
-        }
+        // Sem gambiarras. Ele confia cegamente que o motor enviou 'itens' e 'status'
+        const itensDoCupom = cupom.itens; 
+        const estaCancelado = cupom.status === 'CANCELED';
 
-        state.historicoCupons.forEach((cupom, index) => {
-            const card = document.createElement('div');
-            card.className = 'card-cupom'; // Define a classe base do card
-            
-            // Corrige de 'dados' para 'cupom' e de 'linhaDaTabela' para 'card'
-            if (cupom.status === 'CANCELED' || cupom.status === 'CANCELADO') {
-                card.classList.add('texto-cancelado');
-            }
-            
-            card.onclick = () => this.abrirModalCupom(cupom); 
-
-            card.innerHTML = `
-                <div style="font-weight: bold; color: var(--brand-navy); margin-bottom: 5px;">Venda #${index + 1}</div>
-                <div style="font-size: 0.8rem; color: var(--brand-green); font-weight: bold;">
-                    R$ ${cupom.totalLiquido.toFixed(2)}
+        modal.innerHTML = `
+            <div class="modal-content">
+                <button class="modal-close-btn">×</button>
+                
+                <h2 style="color: ${estaCancelado ? '#ff4444' : 'var(--brand-navy)'}">
+                    ${estaCancelado ? 'CUPOM CANCELADO' : 'DETALHES DO CUPOM'}
+                </h2>
+                <div class="cupom-fiscal">
+                    <p>ID: ${cupom.transactionId}</p>
+                    <hr>
+                    ${itensDoCupom.map(item => `
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                            <span>${item.qtd}x ${item.sku}</span>
+                            <span>R$ ${item.preco.toFixed(2)}</span>
+                        </div>
+                    `).join('')}
+                    <hr>
+                    <p><strong>Total: R$ ${cupom.totalLiquido.toFixed(2)}</strong></p>
                 </div>
-                <div style="font-size: 0.65rem; color: #999; margin-top: 5px;">
-                    ${cupom.data}<br>
-                    ID: ${cupom.transactionId ? cupom.transactionId : '---'}
-                </div>
-            `;
-            container.appendChild(card);
-        });
-    }
+                
+                ${!estaCancelado ? `
+                    <button id="btn-cancelar-cupom" 
+                            class="btn-acao-secundaria" 
+                            style="margin-top: 15px; width: 100%; background-color: #ff4444;"
+                            onclick="window.handleCancelarCupom('${cupom.transactionId}')">
+                        Cancelar Este Cupom
+                    </button>
+                ` : ''}
+            </div>
+        `;
+
+        modal.style.display = 'block';
+    },
 }
 

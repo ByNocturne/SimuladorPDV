@@ -175,7 +175,7 @@ export async function finalizarTransacao() {
             descontoFormaDePagamento: state.descontoFormaDePagamento,
             somaDesconto: state.somaDesconto,
             totalLiquido: state.totalLiquido,
-            carrinho: JSON.parse(JSON.stringify(state.carrinho)) // Cópia profunda
+            itens: JSON.parse(JSON.stringify(state.carrinho)) // Cópia profunda
         };
 
         state.historicoCupons.push(novoCupom);
@@ -257,24 +257,23 @@ export async function enviarCupom() {
     const res = await executarChamadaAPI(endpoint, method, payload, nomeOperacao);
 }
 
-export async function cancelarCupom() {
-    const payload = {
-        "coupon": state.transactionId 
-    };
-
-    const endpoint = '/v2/coupons-cancellation';
-    const method = 'POST';
-    const nomeOperacao = 'Enviar cancelamento de cupom';
-
-    const res = await executarChamadaAPI(endpoint, method, payload, nomeOperacao);
+export async function cancelarCupom(idDoModal) {
+    const idAlvo = idDoModal || state.transactionId;
     
-    const cupomCancelado = state.historicoCupons.find(c => c.transactionId === state.transactionId);
+    if (!idAlvo) return UI.exibirAlerta("Sem transação para cancelar.");
 
-    if (cupomCancelado) {
-        cupomCancelado.status = 'CANCELED';
-        
-        UI.abrirModalCupom(cupomCancelado);
-        
-        UI.renderizarHistoricoCupons(); 
+    const payload = { "coupon": idAlvo };
+    const res = await executarChamadaAPI('/v2/coupons-cancellation', 'POST', payload, 'Cancelar Cupom');
+    
+    if (res) {
+        // Atualiza o status no histórico (Memória)
+        const cupomNoEstado = state.historicoCupons.find(c => c.transactionId === idAlvo);
+        if (cupomNoEstado) {
+            cupomNoEstado.status = 'CANCELED';
+            
+            // Redesenha o modal se ele estiver aberto (Tela)
+            UI.abrirModalCupom(cupomNoEstado);
+        }
+        UI.exibirAlerta("Cupom cancelado!");
     }
 }
