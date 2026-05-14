@@ -216,7 +216,7 @@ export async function enviarCupom() {
         ];
     } else {
         pagamentos = [
-            { payment_form: "cash", amount: state.totalLiquido }
+            { payment_form: "cash", amount: state.totalLiquido, instalments: 1 }
         ];
     }
 
